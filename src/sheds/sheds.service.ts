@@ -4,31 +4,29 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
-  NotFoundException
 } from '@nestjs/common';
-
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Connection, Model } from 'mongoose';
 import { isMongoId } from 'class-validator';
 
-import { Shed, ShedDocument } from './schemas/shed.schema';
-import { Low, LowDocument } from './schemas/low.schema';
-import { Sick } from './schemas/sick.schema';
-import { EggRegister } from './schemas/egg-register.schema';
-import { Recovered } from './schemas/recovered.schema';
-
 import { CreateShedDto, UpdateShedDto } from './dto';
 import { ReportShedDto } from './dto/sheds/report-shed.dto';
 import { SelectShedDto } from './dto/sheds/select-shed.dto';
-import { VaccineControl } from './schemas/vaccine-control.schema';
+
+import { EggRegister } from './schemas/egg-register.schema';
 import { Event } from './schemas/event.schema';
+import { HealthManagement } from './schemas/health-management.schema';
+import { Low, LowDocument } from './schemas/low.schema';
+import { Recovered } from './schemas/recovered.schema';
+import { Shed, ShedDocument } from './schemas/shed.schema';
+import { Sick } from './schemas/sick.schema';
+import { VaccineControl } from './schemas/vaccine-control.schema';
 
 @Injectable()
 export class ShedsService {
   private readonly logger = new Logger(ShedsService.name);
 
   constructor(
-
     @InjectConnection()
     private readonly connection: Connection,
 
@@ -51,7 +49,10 @@ export class ShedsService {
     private readonly vaccineControlModel: Model<VaccineControl>,
 
     @InjectModel(Event.name)
-    private readonly eventModel: Model<Event>
+    private readonly eventModel: Model<Event>,
+
+    @InjectModel(HealthManagement.name)
+    private readonly healthManagementModel: Model<HealthManagement>
   ) { }
 
   public async create(createShedDto: CreateShedDto) {
@@ -84,6 +85,9 @@ export class ShedsService {
   }
 
   public async update(reqShed: ShedDocument, updateShedDto: UpdateShedDto) {
+    const session = await this.connection.startSession()
+    session.startTransaction();
+
     const { name, state, initialDate, initialStock } = updateShedDto;
     reqShed.name = name;
     reqShed.state = state;
@@ -98,7 +102,7 @@ export class ShedsService {
     const shedExists = await this.shedModel.findOne({
       slug: reqShed.slug,
       _id: { $ne: reqShed._id }
-    });
+    }).session(session);
 
     if (shedExists)
       throw new ConflictException(`El registro (${reqShed.name}) ya existe`);
@@ -111,19 +115,37 @@ export class ShedsService {
       reqShed.sicksCount = 0;
       reqShed.recoveredCount = 0;
       reqShed.state = 'inactive';
-      await Promise.all([
-        this.lowModel.deleteMany({ shedId: reqShed._id }),
-        this.sickModel.deleteMany({ shedId: reqShed._id }),
-        this.recoveredModel.deleteMany({ shedId: reqShed._id }),
-        this.eggRegisterModel.deleteMany({ shedId: reqShed._id })
-      ]);
+
+      await this.lowModel.deleteMany({ shedId: reqShed._id }).session(session)
+      await this.sickModel.deleteMany({ shedId: reqShed._id }).session(session)
+      await this.recoveredModel.deleteMany({ shedId: reqShed._id }).session(session)
+      await this.eggRegisterModel.deleteMany({ shedId: reqShed._id }).session(session)
+
+      if (reqShed.vaccineControl) {
+        const vaccineControl = await this.vaccineControlModel.findById(reqShed.vaccineControl).session(session);
+        const eventIds = vaccineControl.events.flatMap(event => event._id);
+        if (eventIds.length) {
+          await this.eventModel.deleteMany({ _id: { $in: eventIds } }).session(session);
+        }
+        await vaccineControl.deleteOne().session(session);
+        reqShed.vaccineControl = null;
+      }
+
+      if (reqShed.healthManagement) {
+        await this.healthManagementModel.findByIdAndDelete({ _id: reqShed.healthManagement }).session(session);
+        reqShed.healthManagement = null;
+      }
     }
 
     try {
-      await reqShed.save();
+      await reqShed.save({ session });
+      await session.commitTransaction();
       return 'Se actualizó correctamente';
     } catch (error) {
+      await session.abortTransaction()
       this.handleError(error);
+    } finally {
+      await session.endSession();
     }
   }
 
@@ -135,23 +157,36 @@ export class ShedsService {
     const vaccineControlIds = vaccineControls.map((control) => control._id);
     const eventIds = vaccineControls.flatMap(control => control.events);
 
+    const healthManagement = await this.healthManagementModel.find({ shed: { $in: ids } }).session(session)
+    const healthManagementIds = healthManagement.map(item => item._id);
+
     const countVaccineControlIds = vaccineControlIds.map(id => id.toString());
     const countEventIds = eventIds.map(event => event._id.toString());
+    const countHealthManagementIds = healthManagementIds.map(item => item._id.toString());
+
+    const eggsRegisters = await this.eggRegisterModel.find({shed: {$in: ids}});
+    const eggsRegistersIds = eggsRegisters.map(item => item._id);
+    const countEggsRegistersIds = eggsRegistersIds.map(item => item._id.toString());
+
 
     try {
-
       await this.lowModel.deleteMany({ shedId: { $in: ids } }).session(session);
       await this.sickModel.deleteMany({ shedId: { $in: ids } }).session(session);
       await this.recoveredModel.deleteMany({ shedId: { $in: ids } }).session(session);
       await this.eggRegisterModel.deleteMany({ shedId: { $in: ids } }).session(session)
-      await this.shedModel.deleteMany({ _id: { $in: ids } }).session(session);
       await this.eventModel.deleteMany({ _id: { $in: eventIds } }).session(session);
       await this.vaccineControlModel.deleteMany({ _id: { $in: vaccineControlIds } }).session(session);
+      await this.healthManagementModel.deleteMany({ _id: { $in: healthManagementIds } }).session(session);
+      await this.shedModel.deleteMany({ _id: { $in: ids } }).session(session);
+      await this.eggRegisterModel.deleteMany({_id: {$in: eggsRegistersIds}}).session(session) ;  
+
       await session.commitTransaction();
       return {
         message: 'Se eliminaron los registros correctamente',
         countVaccineControlIds,
-        countEventIds
+        countEventIds,
+        countHealthManagementIds,
+        countEggsRegistersIds
       };
     } catch (error) {
       await session.abortTransaction();
@@ -319,6 +354,9 @@ export class ShedsService {
   }
 
   public async resetShed(reqShed: ShedDocument) {
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
     reqShed.state = 'inactive';
     reqShed.initialDate = null;
     reqShed.initialStock = 0;
@@ -326,31 +364,35 @@ export class ShedsService {
     reqShed.lowsCount = 0;
     reqShed.sicksCount = 0;
     reqShed.recoveredCount = 0;
-    reqShed.managed = false;
-
-
-    await Promise.all([
-      this.lowModel.deleteMany({ shedId: reqShed._id }),
-      this.sickModel.deleteMany({ shedId: reqShed._id }),
-      this.recoveredModel.deleteMany({ shedId: reqShed._id }),
-      this.eggRegisterModel.deleteMany({ shedId: reqShed._id })
-    ]);
-
-    if (reqShed.vaccineControl) {
-      const vaccineControl = await this.vaccineControlModel.findById(reqShed.vaccineControl)
-      const eventIds = vaccineControl.events.flatMap(event => event._id);
-      if(eventIds.length ) {
-        await this.eventModel.deleteMany({ _id: { $in: eventIds } });
-      }
-      await vaccineControl.deleteOne();
-      reqShed.vaccineControl = null;
-    }
 
     try {
-      await reqShed.save();
+      await this.lowModel.deleteMany({ shedId: reqShed._id }).session(session);
+      await this.sickModel.deleteMany({ shedId: reqShed._id }).session(session);
+      await this.recoveredModel.deleteMany({ shedId: reqShed._id }).session(session);
+      await this.eggRegisterModel.deleteMany({ shedId: reqShed._id }).session(session);
+
+      if (reqShed.vaccineControl) {
+        const vaccineControl = await this.vaccineControlModel.findById(reqShed.vaccineControl).session(session);
+        const eventIds = vaccineControl.events.flatMap(event => event._id);
+        if (eventIds.length) {
+          await this.eventModel.deleteMany({ _id: { $in: eventIds } }).session(session);
+        }
+        await vaccineControl.deleteOne().session(session);
+        reqShed.vaccineControl = null;
+      }
+
+      if (reqShed.healthManagement) {
+        await this.healthManagementModel.findByIdAndDelete({ _id: reqShed.healthManagement }).session(session);
+        reqShed.healthManagement = null;
+      }
+      await reqShed.save({ session });
+      await session.commitTransaction();
       return 'Se reinició correctamente';
     } catch (error) {
+      await session.abortTransaction();
       this.handleError(error);
+    } finally {
+      session.endSession();
     }
   }
 

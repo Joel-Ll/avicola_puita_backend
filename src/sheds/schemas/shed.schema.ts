@@ -47,8 +47,12 @@ export class Shed {
   })
   vaccineControl: Types.ObjectId;
 
-  @Prop({ default: false })
-  managed: boolean;
+  @Prop({
+    type: SchemaType.Types.ObjectId,
+    ref: 'HealthManagement',
+    default: null
+  })
+  healthManagement: Types.ObjectId;
 }
 
 export const ShedShema = SchemaFactory.createForClass(Shed);

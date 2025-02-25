@@ -1,37 +1,45 @@
 import { Controller, Get, Post, Body, Patch, Delete, Req, Param } from '@nestjs/common';
-import { ShedsService } from './sheds.service';
+
+import { EggsRegisterService } from './services/eggs-register.service';
+import { EggsService } from './services/eggs.service';
+import { HealthManagementService } from './services/health-management.service';
 import { LowsService } from './services/lows.service';
 import { RecoveredService } from './services/recovered.service';
+import { ShedsService } from './sheds.service';
 import { SicksService } from './services/sicks.service';
-
-import { CreateShedDto, UpdateShedDto } from './dto';
-import { CreateRecoveredDto } from './dto/recovered/create-recovered.dto';
-import { CreateSickDto } from './dto/sicks/create-sick.dto';
-import { CreateLowDto } from './dto/lows/create-low.dto';
-import { ReportShedDto } from './dto/sheds/report-shed.dto';
-import { SelectShedDto } from './dto/sheds/select-shed.dto';
-import { ReqShed } from './interfaces/req-shed.interface';
-import { EggsService } from './services/eggs.service';
-import { ParseMongoIdPipe } from 'src/common/pipes/parse-mongo-id.pipe';
-import { UpdateEggDto } from './dto/eggs/update-egg.dto';
-import { RegisterEggProductionDto } from './dto/egg-production/register-egg-production.dto';
-import { EggsRegisterService } from './services/eggs-register.service';
 import { VaccioneControlService } from './services/vaccione-control.service';
-import { CreateVaccineControlDto } from './dto/vaccine-control/create-vaccine-control.dto';
-import { CreateEventDto } from './dto/events/create-event.dto';
+
 import { ChangeEventStateDto } from './dto/events/change-event-state.dto';
+import { CreateEventDto } from './dto/events/create-event.dto';
+import { CreateLowDto } from './dto/lows/create-low.dto';
+import { CreateRecoveredDto } from './dto/recovered/create-recovered.dto';
+import { CreateShedDto, UpdateShedDto } from './dto';
+import { CreateSickDto } from './dto/sicks/create-sick.dto';
+import { CreateVaccineControlDto } from './dto/vaccine-control/create-vaccine-control.dto';
+import { GetRateDto } from './dto/sheds/get-rate.dto';
+import { ParseMongoIdPipe } from 'src/common/pipes/parse-mongo-id.pipe';
+import { RegisterEggProductionDto } from './dto/egg-production/register-egg-production.dto';
+import { RegisterWeightDto } from './dto/sheds/register-weight.dto';
+import { ReportShedDto } from './dto/sheds/report-shed.dto';
+import { RescheduleEventsDto } from './dto/events/reschedule-events.dto';
+import { SelectShedDto } from './dto/sheds/select-shed.dto';
+import { UpdateEggDto } from './dto/eggs/update-egg.dto';
+import { UpdateEggProductionDto } from './dto/egg-production/update-egg-production.dto';
 import { UpdateEventDto } from './dto/events/update-event.dto';
 import { UpdateVaccineControlDto } from './dto/vaccine-control/update-vaccine-control.dto';
+
+import { ReqShed } from './interfaces/req-shed.interface';
 
 @Controller('sheds')
 export class ShedsController {
   constructor(
-    private readonly shedsService: ShedsService,
-    private readonly recoveredService: RecoveredService,
-    private readonly lowService: LowsService,
-    private readonly sickService: SicksService,
-    private readonly eggsService: EggsService,
     private readonly eggsRegisterService: EggsRegisterService,
+    private readonly eggsService: EggsService,
+    private readonly healthManagementService: HealthManagementService, 
+    private readonly lowService: LowsService,
+    private readonly recoveredService: RecoveredService,
+    private readonly shedsService: ShedsService,
+    private readonly sickService: SicksService,
     private readonly vaccioneControlService: VaccioneControlService,
   ) { }
 
@@ -108,7 +116,7 @@ export class ShedsController {
   ) {
     return this.recoveredService.registerRecovered(reqShed.shed, createRecoveredDto);
   }
-  
+
   // Last Five Reports 
   @Get('summary/register')
   summaryLatest() {
@@ -152,7 +160,7 @@ export class ShedsController {
     return this.vaccioneControlService.getAllVaccineControl();
   }
 
-  @Delete('vaccine-control/:vaccineControlId') 
+  @Delete('vaccine-control/:vaccineControlId')
   removeVaccineControl(
     @Param('vaccineControlId', ParseMongoIdPipe) vaccineControlId: string,
   ) {
@@ -168,12 +176,21 @@ export class ShedsController {
     return this.vaccioneControlService.addEvent(vaccineControlId, createEventDto);
   }
 
-  @Patch('vaccine-control/event/:eventId') 
+  @Patch('vaccine-control/:vaccineControlId/event/:eventId')
   updateEvent(
+    @Param('vaccineControlId', ParseMongoIdPipe) vaccineControlId: string,
     @Param('eventId', ParseMongoIdPipe) eventId: string,
     @Body() updateEventDto: UpdateEventDto
   ) {
-    return this.vaccioneControlService.updateEvent(eventId, updateEventDto)
+    return this.vaccioneControlService.updateEvent(vaccineControlId, eventId, updateEventDto)
+  }
+
+  @Post('vaccine-control/:vaccineControlId/events/reschedule')
+  reschedule(
+    @Param('vaccineControlId', ParseMongoIdPipe) vaccineControlId: string,
+    @Body() rescheduleEventsDto: RescheduleEventsDto
+  ) {
+    return this.vaccioneControlService.rescheduleEvents(vaccineControlId, rescheduleEventsDto)
   }
 
   @Post('vaccine-control/event/:eventId')
@@ -197,6 +214,42 @@ export class ShedsController {
     @Param('eventId', ParseMongoIdPipe) eventId: string,
   ) {
     return this.vaccioneControlService.deleteEvent(vaccineControlId, eventId);
+  }
+
+  // Health Management
+  @Post(':shedId/health-management')
+  createHealthManagement(
+    @Req() reqShed: ReqShed
+  ) {
+    return this.healthManagementService.createHealthManagement(reqShed.shed);
+  }
+
+  @Get('health-management/all')
+  getAllHealthManagement() {
+    return this.healthManagementService.getAllHealthManagement();
+  }
+
+  @Get('health-management/:trackingId/one')
+  getOneHealthManagement(
+    @Param('trackingId', ParseMongoIdPipe) trackingId: string,
+  ) {
+    return this.healthManagementService.getOneHealthManagement(trackingId);
+  }
+
+  @Post('health-management/:trackingId/rates')
+  getRates(
+    @Param('trackingId', ParseMongoIdPipe) trackingId: string,
+    @Body() getRateDto: GetRateDto
+  ) {
+    return this.healthManagementService.getRates(trackingId, getRateDto)
+  }
+
+  @Post('health-management/:trackingId/growth')
+  registerWeight(
+    @Param('trackingId', ParseMongoIdPipe) trackingId: string,
+    @Body() registerWeightDto: RegisterWeightDto
+  ) {
+    return this.healthManagementService.registerWeight(trackingId, registerWeightDto)
   }
 
   // Eggs
@@ -225,7 +278,29 @@ export class ShedsController {
   }
 
   @Get('eggs/production/eggs')
-  getEggProduction() {
-    return this.eggsRegisterService.getEggProduction();
+  getEggsProduction() {
+    return this.eggsRegisterService.getEggsProduction();
+  }
+
+  @Get('eggs/production/eggs/:registerEggId')
+  getEggProduction(
+    @Param('registerEggId', ParseMongoIdPipe) registerEggId: string
+  ) {
+    return this.eggsRegisterService.getEggProduction(registerEggId)
+  }
+
+  @Patch('eggs/production/eggs/:registerEggId')
+  updateEggProduction(
+    @Param('registerEggId', ParseMongoIdPipe) registerEggId: string,
+    @Body() updateEggProductionDto: UpdateEggProductionDto
+  ) {
+    return this.eggsRegisterService.updateEggProduction(registerEggId, updateEggProductionDto)
+  }
+
+  @Delete('eggs/production/eggs/:registerEggId')
+  deleteEggProduction(
+    @Param('registerEggId', ParseMongoIdPipe) registerEggId: string,
+  ) {
+    return this.eggsRegisterService.deleteEggProduction(registerEggId);
   }
 }

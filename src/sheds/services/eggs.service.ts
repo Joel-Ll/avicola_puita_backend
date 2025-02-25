@@ -1,9 +1,9 @@
 import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Egg } from '../schemas/egg.schema';
 import { Model } from 'mongoose';
-import { initialEggs } from 'src/common/constants/egg-size';
+import { Egg } from '../schemas/egg.schema';
 import { UpdateEggDto } from '../dto/eggs/update-egg.dto';
+import { initialEggs } from 'src/common/constants/egg-size';
 
 @Injectable()
 export class EggsService {
@@ -39,20 +39,6 @@ export class EggsService {
       throw new Error('No se pudo obtener la lista de huevos.');
     }
   }
-
-
-  // public async getEggs() {
-  //   let eggs = await this.eggModel.find({}).sort({sizeOrder: 1});
-  //   if (eggs.length) return eggs;
-
-  //   eggs = await Promise.all(
-  //     initialEggs.map(async item => {
-  //       const egg = new this.eggModel(item);
-  //       return egg.save();
-  //     })
-  //   );
-  //   return eggs;
-  // }
 
   public async getOneEgg(eggId: string) {
     const egg = await this.eggModel.findById(eggId);

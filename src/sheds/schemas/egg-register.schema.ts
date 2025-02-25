@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as SchemaType, Types } from 'mongoose';
-import { eggSizes } from 'src/common/constants/egg-size';
 
 export type EggRegisterDocument = HydratedDocument<EggRegister>
 
@@ -10,28 +9,25 @@ export class EggRegister {
     type: SchemaType.Types.ObjectId,
     ref: 'Shed'
   })
-  shedId: Types.ObjectId
+  shed: Types.ObjectId
 
   @Prop({
     type: SchemaType.Types.ObjectId,
     ref: 'Egg'
   })
-  eggId: Types.ObjectId
-
-  @Prop({type: String})
-  shedName: string;
+  egg: Types.ObjectId
 
   @Prop({ type: Date })
   dateRegister: Date;
 
-  @Prop({
-    type: String,
-    enum: Object.values(eggSizes),
-  })
-  size: string;
+  @Prop({ type: Number, default: 0})
+  unitQuantity: number;
 
-  @Prop({ type: Number })
-  quantity: number;
+  @Prop({ type: Number, default: 0 })
+  quantityPerBox: number;
+
+  @Prop({ type: Number, default: 0 })
+  totalQuantity: number;
 }
 
 export const EggRegisterSchema = SchemaFactory.createForClass(EggRegister)

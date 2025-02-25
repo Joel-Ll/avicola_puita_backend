@@ -28,4 +28,13 @@ export class ShedUtils {
 
     return eventState.PENDING;
   }
+
+  public static isValidDataRange(fromDate: string, toDate: string, initialDate: string): boolean {
+    const from = new Date(fromDate);
+    const to = new Date(toDate);
+    const initial = new Date(initialDate);
+    const today = new Date();
+
+    return from >= initial && to <= today && from <= to;
+  }
 }

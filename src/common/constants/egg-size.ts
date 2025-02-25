@@ -1,5 +1,6 @@
 export const eggSizes = {
-  C: 'C',
+  P: 'P',
+  C: 'CH',
   M: 'M',
   G: 'G',
   EX: 'EX',
@@ -11,45 +12,52 @@ export type EggSize = typeof eggSizes[keyof typeof eggSizes];
 
 export const initialEggs = [
   {
-    size: 'C',
+    size: 'P',
+    price: 0,
+    description: 'Huevos pequeños',
+    quantity: 0,
+    sizeOrder: 1,
+  },
+  {
+    size: 'CH',
     price: 0,
     description: 'Huevos chicos',
     quantity: 0,
-    sizeOrder: 1,
+    sizeOrder: 2,
   },
   {
     size: 'M',
     price: 0,
     description: 'Huevos medianos',
     quantity: 0,
-    sizeOrder: 2,
+    sizeOrder: 3,
   },
   {
     size: 'G',
     price: 0,
     description: 'Huevos grandes',
     quantity: 0,
-    sizeOrder: 3,
+    sizeOrder: 4,
   },
   {
     size: 'EX',
     price: 0,
     description: 'Huevos extra grandes',
     quantity: 0,
-    sizeOrder: 4,
+    sizeOrder: 5,
   },
   {
     size: 'S',
     price: 0,
     description: 'Huevos super grandes',
     quantity: 0,
-    sizeOrder: 5,
+    sizeOrder: 6,
   },
   {
     size: 'R',
     price: 0,
     description: 'Huevos rotos',
     quantity: 0,
-    sizeOrder: 6,
+    sizeOrder: 7,
   },
 ]

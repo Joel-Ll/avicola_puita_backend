@@ -6,9 +6,11 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+
+import { CreateRecoveredDto } from '../dto/recovered/create-recovered.dto';
+
 import { Shed, ShedDocument } from '../schemas/shed.schema';
 import { Recovered } from '../schemas/recovered.schema';
-import { CreateRecoveredDto } from '../dto/recovered/create-recovered.dto';
 
 @Injectable()
 export class RecoveredService {

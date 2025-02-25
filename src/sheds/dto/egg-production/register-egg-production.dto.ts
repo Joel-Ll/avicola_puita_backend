@@ -3,10 +3,10 @@ import { IsDate, IsMongoId, IsNotEmpty, IsNumber, Min } from 'class-validator';
 
 export class RegisterEggProductionDto {
   @IsMongoId({ message: 'Id no válido' })
-  shedId: string;
+  shed: string;
 
   @IsMongoId({ message: 'Id no válido' })
-  eggId: string;
+  egg: string;
 
   @IsNotEmpty({ message: 'La fecha de registro es obligatoria' })
   @Type(() => Date)
@@ -16,6 +16,11 @@ export class RegisterEggProductionDto {
   @IsNotEmpty({ message: 'La cantidad es obligatorio' })
   @Type(() => Number)
   @IsNumber({}, { message: 'La cantidad debe ser un número' })
-  @Min(1, { message: 'Cantidad no válida' })
-  quantity: number;
+  @Min(0, { message: 'Cantidad no válida' })
+  unitQuantity: number;
+
+  @Type(() => Number)
+  @IsNumber({}, { message: 'La cantidad debe ser un número' })
+  @Min(0, { message: 'Cantidad no válida' })
+  quantityPerBox: number;
 }
