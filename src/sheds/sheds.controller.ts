@@ -29,8 +29,10 @@ import { UpdateEventDto } from './dto/events/update-event.dto';
 import { UpdateVaccineControlDto } from './dto/vaccine-control/update-vaccine-control.dto';
 
 import { ReqShed } from './interfaces/req-shed.interface';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('sheds')
+@Auth()
 export class ShedsController {
   constructor(
     private readonly eggsRegisterService: EggsRegisterService,

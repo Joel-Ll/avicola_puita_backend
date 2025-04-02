@@ -20,19 +20,23 @@ import { Sick, SickSchema } from './schemas/sick.schema';
 import { SicksService } from './services/sicks.service';
 import { VaccineControl, VaccineControlSchema } from './schemas/vaccine-control.schema';
 import { VaccioneControlService } from './services/vaccione-control.service';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports: [MongooseModule.forFeature([
-    { name: Egg.name, schema: EggSchema },
-    { name: EggRegister.name, schema: EggRegisterSchema },
-    { name: Event.name, schema: EventSchema },
-    { name: HealthManagement.name, schema: HealthManagementSchema },
-    { name: Low.name, schema: LowSchema },
-    { name: Recovered.name, schema: RecoveredSchema },
-    { name: Shed.name, schema: ShedShema },
-    { name: Sick.name, schema: SickSchema },
-    { name: VaccineControl.name, schema: VaccineControlSchema },
-  ])],
+  imports: [
+    AuthModule,
+    MongooseModule.forFeature([
+      { name: Egg.name, schema: EggSchema },
+      { name: EggRegister.name, schema: EggRegisterSchema },
+      { name: Event.name, schema: EventSchema },
+      { name: HealthManagement.name, schema: HealthManagementSchema },
+      { name: Low.name, schema: LowSchema },
+      { name: Recovered.name, schema: RecoveredSchema },
+      { name: Shed.name, schema: ShedShema },
+      { name: Sick.name, schema: SickSchema },
+      { name: VaccineControl.name, schema: VaccineControlSchema },
+    ])
+  ],
   controllers: [ShedsController],
   providers: [
     EggsRegisterService,

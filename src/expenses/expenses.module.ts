@@ -4,11 +4,16 @@ import { ExpensesService } from './expenses.service';
 import { ExpensesController } from './expenses.controller';
 import { Expense, ExpenseSchema } from './schemas/expense.schema';
 import { PrinterModule } from 'src/printer/printer.module';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports: [MongooseModule.forFeature([
-    { name: Expense.name, schema: ExpenseSchema },
-  ]), PrinterModule],
+  imports: [
+    AuthModule,
+    PrinterModule,
+    MongooseModule.forFeature([
+      { name: Expense.name, schema: ExpenseSchema },
+    ])
+  ],
   controllers: [ExpensesController],
   providers: [ExpensesService],
 })

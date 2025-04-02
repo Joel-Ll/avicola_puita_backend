@@ -7,6 +7,9 @@ import { CommonModule } from './common/common.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { AssetsModule } from './assets/assets.module';
 import { PrinterModule } from './printer/printer.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+import { CustomersModule } from './customers/customers.module';
 
 @Module({
   imports: [
@@ -16,7 +19,10 @@ import { PrinterModule } from './printer/printer.module';
     CommonModule,
     ExpensesModule,
     AssetsModule,
-    PrinterModule
+    PrinterModule,
+    UsersModule,
+    AuthModule,
+    CustomersModule
   ],
   controllers: [],
   providers: [],

@@ -4,8 +4,10 @@ import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { ParseMongoIdPipe } from 'src/common/pipes/parse-mongo-id.pipe';
 import { Response } from 'express';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('assets')
+@Auth()
 export class AssetsController {
   constructor(private readonly assetsService: AssetsService) {}
 

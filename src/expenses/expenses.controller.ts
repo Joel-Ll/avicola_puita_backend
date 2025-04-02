@@ -5,8 +5,10 @@ import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { ParseMongoIdPipe } from 'src/common/pipes/parse-mongo-id.pipe';
 import { Response } from 'express';
 import { GenerateReportDto } from './dto/generate-report.dto';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('expenses')
+@Auth()
 export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) { }
 
