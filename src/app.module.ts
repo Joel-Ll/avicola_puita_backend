@@ -10,6 +10,8 @@ import { PrinterModule } from './printer/printer.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { CustomersModule } from './customers/customers.module';
+import { SalesModule } from './sales/sales.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -22,7 +24,9 @@ import { CustomersModule } from './customers/customers.module';
     PrinterModule,
     UsersModule,
     AuthModule,
-    CustomersModule
+    CustomersModule,
+    SalesModule,
+    DashboardModule
   ],
   controllers: [],
   providers: [],

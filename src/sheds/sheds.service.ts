@@ -85,9 +85,6 @@ export class ShedsService {
   }
 
   public async update(reqShed: ShedDocument, updateShedDto: UpdateShedDto) {
-    const session = await this.connection.startSession()
-    session.startTransaction();
-
     const { name, state, initialDate, initialStock } = updateShedDto;
     reqShed.name = name;
     reqShed.state = state;
@@ -98,6 +95,9 @@ export class ShedsService {
 
     if (reqShed.currentStock < 0)
       throw new BadRequestException('La cantidad inicial no puede ser menor a la cantidad de bajas');
+
+    const session = await this.connection.startSession()
+    session.startTransaction();
 
     const shedExists = await this.shedModel.findOne({
       slug: reqShed.slug,
@@ -140,7 +140,7 @@ export class ShedsService {
     try {
       await reqShed.save({ session });
       await session.commitTransaction();
-      return 'Se actualizó correctamente';
+      return 'Los datos del galpón se actualizaron correctamente.';
     } catch (error) {
       await session.abortTransaction()
       this.handleError(error);
@@ -164,7 +164,7 @@ export class ShedsService {
     const countEventIds = eventIds.map(event => event._id.toString());
     const countHealthManagementIds = healthManagementIds.map(item => item._id.toString());
 
-    const eggsRegisters = await this.eggRegisterModel.find({shed: {$in: ids}});
+    const eggsRegisters = await this.eggRegisterModel.find({ shed: { $in: ids } });
     const eggsRegistersIds = eggsRegisters.map(item => item._id);
     const countEggsRegistersIds = eggsRegistersIds.map(item => item._id.toString());
 
@@ -178,7 +178,7 @@ export class ShedsService {
       await this.vaccineControlModel.deleteMany({ _id: { $in: vaccineControlIds } }).session(session);
       await this.healthManagementModel.deleteMany({ _id: { $in: healthManagementIds } }).session(session);
       await this.shedModel.deleteMany({ _id: { $in: ids } }).session(session);
-      await this.eggRegisterModel.deleteMany({_id: {$in: eggsRegistersIds}}).session(session) ;  
+      await this.eggRegisterModel.deleteMany({ _id: { $in: eggsRegistersIds } }).session(session);
 
       await session.commitTransaction();
       return {
@@ -387,7 +387,7 @@ export class ShedsService {
       }
       await reqShed.save({ session });
       await session.commitTransaction();
-      return 'Se reinició correctamente';
+      return 'Los datos del galpón se reiniciaron para el nuevo ciclo.';
     } catch (error) {
       await session.abortTransaction();
       this.handleError(error);

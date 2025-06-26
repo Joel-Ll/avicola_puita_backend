@@ -15,8 +15,11 @@ export class Egg {
   @Prop({ type: Number })
   quantity: number;
 
-  @Prop({ type: Number })
-  price: number;
+  @Prop({ type: Number, default: 0 })
+  unit_price: number;
+
+  @Prop({ type: Number, default: 0})
+  box_price: number;
 
   @Prop({ type: String })
   description: string;

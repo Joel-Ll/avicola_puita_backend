@@ -6,7 +6,7 @@ export class CreateAssetDto {
 
   @IsOptional()
   @IsNumber()
-  @Min(1)
+  @Min(0)
   quantity: number;
 }
 

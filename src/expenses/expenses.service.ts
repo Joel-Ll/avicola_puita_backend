@@ -11,7 +11,7 @@ import { GenerateReportDto } from './dto/generate-report.dto';
 
 @Injectable()
 export class ExpensesService {
-  private readonly logger = new Logger(Expense.name)
+  private readonly logger = new Logger(ExpensesService.name)
 
   constructor(
     @InjectModel(Expense.name)
@@ -73,18 +73,16 @@ export class ExpensesService {
       }
     }
 
-    if (category !== 'all') {
+    if (category !== 'all') 
       filters.category = category
-    }
 
     const data = await this.expenseModel.find(filters)
       .sort({ createdAt: -1 })
       .select({ description: 1, amount: 1, date: 1 })
 
-    if (!data || data.length === 0) {
-      console.log('entra');
+    if (!data || data.length === 0) 
       throw new BadRequestException('No hay registros');
-    }
+    
     const docDefinition = getExpenseReport({ data, subTitle: 'Registro de Gastos' })
     return this.printerService.createPdf(docDefinition)
   }

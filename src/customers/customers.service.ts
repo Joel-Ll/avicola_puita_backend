@@ -17,7 +17,7 @@ export class CustomersService {
 
   constructor(
     @InjectModel(Customer.name)
-    private readonly customerModel: Model<Customer>
+    private readonly customerModel: Model<Customer>,
   ) { }
 
   public async create(createCustomerDto: CreateCustomerDto) {
@@ -36,7 +36,8 @@ export class CustomersService {
   }
 
   public async findAll() {
-    const customers = await this.customerModel.find({});
+    const customers = await this.customerModel.find({})
+      .sort({ createdAt: -1 });
     return customers;
   }
 
@@ -56,6 +57,9 @@ export class CustomersService {
   }
 
   public async remove(customer: CustomerDocument) {
+    if (customer.orders.length > 0)
+      throw new BadRequestException('Acción no válida');
+
     await customer.deleteOne();
     return 'Cliente eliminado correctamente';
   }

@@ -1,9 +1,13 @@
-import { IsNumber,  } from 'class-validator';
+import { IsNumber, Min, min,  } from 'class-validator';
 
 export class UpdateEggDto {
   @IsNumber()
   quantity: number;
 
   @IsNumber()
-  price: number;
+  unit_price: number;
+
+  @IsNumber()
+  box_price: number;
+
 }

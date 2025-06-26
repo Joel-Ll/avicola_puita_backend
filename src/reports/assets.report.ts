@@ -21,21 +21,27 @@ export const getAssetReport = (options: ReportOptions): TDocumentDefinitions => 
       title: title ?? 'Granja Avícola "Puita"',
       subTitle: subTitle ?? 'subtitulo',
     }),
+    styles: {
+      tableText: {
+        fontSize: 10,
+        margin: 0
+      }
+    },
     footer: footerSection,
     pageMargins: [40, 110, 40, 60],
+
     content: [
       {
         layout: 'lightHorizontalLines',
-        marginTop: 30,
         table: {
           headerRows: 1,
-          widths: ['*', '*', '*'],
+          widths: [100, '*', 70],
           body: [
-            ['Ultima actualizacion', 'Nombre', 'Cantidad Unitaria'],
+            [{ text: 'Última actualización', bold: true, style: 'tableText' }, {text: 'Nombre', bold: true, style: 'tableText'}, {text: 'Cantidad', bold: true, style: 'tableText'}],
             ...data.map(asset => [
-              { text: format(new Date(asset.updatedAt), "dd MMM yyyy", { locale: es }) },
-              asset.name,
-              asset.quantity
+              { text: format(new Date(asset.updatedAt), "dd MMM yyyy", { locale: es }), style: 'tableText'},
+              { text: asset.name, style: 'tableText'},
+              {text: asset.quantity, style: 'tableText'}
             ]),
           ]
         }

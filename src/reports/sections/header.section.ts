@@ -4,38 +4,47 @@ import { Content } from "pdfmake/interfaces";
 
 const logo: Content = {
   image: 'src/public/logo-avicola.png',
-  width: 120,
-  height: 130,
+  width: 100,
+  height: 110,
   alignment: 'center',
   margin: [0, 0, 0, 0]
-}
-
-const currentDate: Content = {
-  text: format(new Date(), "dd MMM yyyy", { locale: es }),
-  alignment: 'right',
-  margin: [30, 37],
-  width: 180
 }
 
 interface HeaderOptions {
   title?: string;
   subTitle?: string;
   showLogo?: boolean;
-  showDate?: boolean;
+  date?: Date;
 }
 
 export const headerSection = (options: HeaderOptions): Content => {
-  const { title, subTitle, showLogo = true, showDate = true } = options;
+  const { title, subTitle, showLogo = true, date } = options;
+
+  const dateRegister: Content = date ? (
+    {
+      text: format(new Date(date), "dd MMM yyyy", { locale: es }),
+      fontSize: 10,
+      alignment: 'right',
+      margin: [30, 37],
+      width: 180
+    }
+  ) : ({
+    text: format(new Date(), "dd MMM yyyy", { locale: es }),
+    fontSize: 10,
+    alignment: 'right',
+    margin: [30, 37],
+    width: 180
+  })
 
   const headerLogo: Content = showLogo ? logo : null;
-  const headerDate: Content = showDate ? currentDate : null;
+  const headerDate: Content = dateRegister;
 
   const headerSubTitle: Content = subTitle ? {
     text: subTitle,
     alignment: 'center',
     margin: [44, 2, 0, 0],
     style: {
-      fontSize: 16
+      fontSize: 10
     }
   } : null;
 
@@ -44,10 +53,10 @@ export const headerSection = (options: HeaderOptions): Content => {
       {
         text: title,
         alignment: 'center',
-        margin: [44, 30, 0, 0],
+        margin: [48, 30, 0, 0],
         style: {
           bold: true,
-          fontSize: 20
+          fontSize: 12
         }
       },
       headerSubTitle

@@ -8,6 +8,7 @@ import { ReqCustomer } from './interface/customer.interface';
 export class CustomersController {
   constructor(private readonly customersService: CustomersService) { }
 
+  // CLIENTES (Customers)
   @Post()
   create(@Body() createCustomerDto: CreateCustomerDto) {
     return this.customersService.create(createCustomerDto);

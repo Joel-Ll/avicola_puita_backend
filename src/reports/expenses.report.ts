@@ -23,26 +23,31 @@ export const getExpenseReport = (options: ReportOptions): TDocumentDefinitions =
       title: title ?? 'Granja Avícola "Puita"',
       subTitle: subTitle ?? 'subtitulo',
     }),
+    styles: {
+      tableText: {
+        fontSize: 10,
+        margin: 0
+      }
+    },
     footer: footerSection,
     pageMargins: [40, 110, 40, 60],
     content: [
       {
         layout: 'lightHorizontalLines',
-        marginTop: 30,
         table: {
           headerRows: 1,
-          widths: [100, '*', 100],
+          widths: [100, '*', 70],
           body: [
-            [{ text: 'Fecha de Registro', bold: true }, { text: 'Descripción', bold: true }, { text: 'Monto', bold: true }],
+            [{ text: 'Fecha de Registro', bold: true, style: 'tableText' }, { text: 'Descripción', bold: true, style: 'tableText' }, { text: 'Monto', bold: true, style: 'tableText'}],
             ...data.map(expense => [
-              { text: format(new Date(expense.date), "dd MMM yyyy", { locale: es }) },
-              expense.description,
-              { text: `Bs. ${new Intl.NumberFormat('es-Es').format(expense.amount)}` }
+              { text: format(new Date(expense.date), "dd MMM yyyy", { locale: es }), style: 'tableText'},
+              { text: expense.description, style: 'tableText'},
+              { text: `Bs. ${new Intl.NumberFormat('es-Es').format(expense.amount)}`, style: 'tableText' }
             ]),
             [
-              { text: 'Total', bold: true, colSpan: 2, alignment: 'right' },
+              { text: 'Total', bold: true, colSpan: 2, alignment: 'right', style: 'tableText'},
               {},
-              { text: `Bs. ${new Intl.NumberFormat('es-ES').format(totalAmount)}`, bold: true }
+              { text: `Bs. ${new Intl.NumberFormat('es-ES').format(totalAmount)}`, bold: true, style: 'tableText'}
             ]
           ]
         }

@@ -48,11 +48,12 @@ export class EggsService {
   }
 
   public async editEgg(eggId: string, updateEggDto: UpdateEggDto) {
-    const { quantity, price } = updateEggDto;
+    const { quantity, unit_price, box_price } = updateEggDto;
     const egg = await this.getOneEgg(eggId)
 
     egg.quantity = quantity 
-    egg.price = price;
+    egg.unit_price = unit_price;
+    egg.box_price = box_price;
 
     try {
       await egg.save();

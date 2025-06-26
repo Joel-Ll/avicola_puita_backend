@@ -74,7 +74,7 @@ export class EggsRegisterService {
         .find()
         .populate('shed', { name: 1 })
         .populate('egg', { size: 1 })
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 }).limit(5);
       return eggsProduction;
     } catch (error) {
       this.handleError(error);
@@ -83,7 +83,7 @@ export class EggsRegisterService {
 
   public async getEggProduction(registerEggId: string) {
     const registerEgg = await this.eggRegisterModel.findById(registerEggId);
-    if(!registerEgg) throw new NotFoundException('Recurso no encontrado');
+    if(!registerEgg) throw new NotFoundException('Registro no encontrado');
     return registerEgg;
   }
 

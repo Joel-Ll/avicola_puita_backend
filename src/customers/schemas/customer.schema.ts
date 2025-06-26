@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { HydratedDocument } from "mongoose";
+import { HydratedDocument, Schema as SchemaType, Types } from 'mongoose';
 
 export type CustomerDocument = HydratedDocument<Customer>
 
@@ -23,6 +23,13 @@ export class Customer {
     required: true
   })
   address: string;
+
+  @Prop({
+    type: [SchemaType.Types.ObjectId],
+    ref: 'Order',
+    default: []
+  })
+  orders: Types.ObjectId[]
 }
 
 export const CustomerSchema = SchemaFactory.createForClass(Customer);
