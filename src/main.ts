@@ -21,7 +21,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: configService.get('FRONTEND_URL'),
+    origin: configService.get('FRONTEND_URL') || '',
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     preflightContinue: false,
     optionsSuccessStatus: 204
