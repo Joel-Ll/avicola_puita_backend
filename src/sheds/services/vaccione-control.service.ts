@@ -46,7 +46,7 @@ export class VaccioneControlService {
     const { adviser, phone, geneticLine, origin } = createVaccioneControlDto;
 
     if (shed.vaccineControl)
-      throw new BadRequestException(`El ${shed.name} ya tiene un plan de vacunación`);
+      throw new BadRequestException(`El ${shed.name} ya tiene un plan de vacunas`);
 
     const vaccioneControl = new this.vaccineControlModel({ adviser, phone, geneticLine, origin, shed: shed._id });
     shed.vaccineControl = vaccioneControl._id;
@@ -54,7 +54,7 @@ export class VaccioneControlService {
     try {
       await vaccioneControl.save();
       await shed.save();
-      return 'Plan de vacunación creado con éxito';
+      return `Registrado correctamente`;
     } catch (error) {
       this.handleError(error);
     }
@@ -65,7 +65,7 @@ export class VaccioneControlService {
     if (!vaccineControl) throw new NotFoundException('No se encontró el plan de vacunas');
     try {
       await vaccineControl.updateOne(updateVaccineControlDto);
-      return 'Evento actualizado correctamente';
+      return 'Actualizado correctamente';
     } catch (error) {
       this.handleError(error);
     }
@@ -80,7 +80,7 @@ export class VaccioneControlService {
       }).populate({ path: 'events', options: { sort: { date: 1 } }, }).exec();
 
     if (!vaccineControl)
-      throw new BadRequestException('Plan de vacunación no encontrado');
+      throw new BadRequestException('Registro no encontrado');
     return vaccineControl;
   }
 
@@ -123,10 +123,10 @@ export class VaccioneControlService {
     const session = await this.connection.startSession();
     session.startTransaction();
     const vaccineControl = await this.vaccineControlModel.findById(vaccineControlId);
-    if (!vaccineControl) throw new NotFoundException('plan de vacunas no encontrado');
+    if (!vaccineControl) throw new NotFoundException('Registro no encontrado');
 
     const shed = await this.shedModel.findById(vaccineControl.shed._id);
-    if (!shed) throw new NotFoundException('Galpon no encontrado');
+    if (!shed) throw new NotFoundException('Galpón no encontrado');
     shed.vaccineControl = null;
 
     try {
@@ -163,21 +163,21 @@ export class VaccioneControlService {
       .populate('shed', { initialDate: 1 });
 
     if (!vaccineControl)
-      throw new BadRequestException('Plan de vacunación no encontrado');
+      throw new BadRequestException('Registro no encontrado');
 
     week = ShedUtils.calculateWeek(vaccineControl.shed['initialDate'], date);
 
     if (week < 0)
-      throw new BadRequestException('La fecha de actividad es menor a la fecha de ingreso');
+      throw new BadRequestException('Fecha no válida');
 
-    const event = new this.eventModel({ ...createEventDto, week })
+    const event = new this.eventModel({ ...createEventDto, week, shedId: vaccineControl.shed})
     vaccineControl.events.push(event._id);
 
     try {
       await event.save({ session });
       await vaccineControl.save({ session });
       await session.commitTransaction();
-      return 'Evento registrado correctamente';
+      return 'Registrado correctamente';
     } catch (error) {
       await session.abortTransaction();
       this.handleError(error);
@@ -193,15 +193,15 @@ export class VaccioneControlService {
       .populate('shed', { initialDate: 1 });
 
     if (!vaccineControl)
-      throw new BadRequestException('Plan de vacunación no encontrado');
+      throw new BadRequestException('Registro no encontrado');
 
     week = ShedUtils.calculateWeek(vaccineControl.shed['initialDate'], updateEventDto.date);
 
     if (week < 0)
-      throw new BadRequestException('La fecha de actividad es menor a la fecha de ingreso');
+      throw new BadRequestException('Fecha no válida');
 
     const event = await this.eventModel.findById(eventId);
-    if (!event) throw new NotFoundException('Evento no encontrado');
+    if (!event) throw new NotFoundException('Registro no encontrado');
 
     try {
       await event.updateOne({
@@ -209,7 +209,7 @@ export class VaccioneControlService {
         week
       });
 
-      return 'Evento actualizado correctamente';
+      return 'Actualizado correctamente';
     } catch (error) {
       this.handleError(error);
     }
@@ -217,7 +217,7 @@ export class VaccioneControlService {
 
   public async getOneEvent(eventId: string) {
     const event = await this.eventModel.findById(eventId);
-    if (!event) throw new NotFoundException('Evento no encontrado');
+    if (!event) throw new NotFoundException('Registro no encontrado');
     return event;
   }
 
@@ -225,7 +225,7 @@ export class VaccioneControlService {
     const { completed } = changeEventStateDto;
     const event = await this.eventModel.findById(eventId);
     if (!event)
-      throw new BadRequestException('Evento no encontrado')
+      throw new BadRequestException('Registro no encontrado')
 
     const validDate = ShedUtils.validateEventDate(event.date);
 
@@ -239,7 +239,7 @@ export class VaccioneControlService {
 
     try {
       event.save();
-      return `El evento fue cambiado a estado: ${event.state}`;
+      return `Actualizado correctamente`;
     } catch (error) {
       this.handleError(error);
     }
@@ -252,12 +252,12 @@ export class VaccioneControlService {
     const vaccineControl = await this.vaccineControlModel.findById(vaccineControlId).session(session);
     const event = await this.eventModel.findById(eventId).session(session);
 
-    if (!vaccineControl) throw new NotFoundException('control de vacuna no encontrado');
-    if (!event) throw new NotFoundException('Evento no encontrado');
+    if (!vaccineControl) throw new NotFoundException('Registro no encontrado');
+    if (!event) throw new NotFoundException('Registro no encontrado');
 
     const existsEvent = vaccineControl.events.find(item => item._id.toString() === event._id.toString());
     if (!existsEvent)
-      throw new BadRequestException('El evento no pertenece al control de vacuna proporcionado.');
+      throw new BadRequestException('Acción no válida');
 
     vaccineControl.events = vaccineControl.events.filter(item => item._id.toString() !== event._id.toString());
 
@@ -265,7 +265,7 @@ export class VaccioneControlService {
       await event.deleteOne({ session })
       await vaccineControl.save({ session });
       await session.commitTransaction();
-      return 'Evento eliminado correctamente';
+      return 'Eliminado correctamente';
     } catch (error) {
       await session.abortTransaction();
       this.handleError(error);
@@ -282,7 +282,7 @@ export class VaccioneControlService {
       }).populate('events')
 
     if (!vaccineControl)
-      throw new NotFoundException('Vaccine Control not found');
+      throw new NotFoundException('Registro no encontrado');
 
     const pendingEvents = vaccineControl.events.filter((event: any) => event.state === 'pending');
     const updatePending = pendingEvents.map(event => event._id.toString());
@@ -305,7 +305,7 @@ export class VaccioneControlService {
       );
 
       return {
-        message: 'Cambios realizados correctamente',
+        message: 'Se modificaron las fechas programadas',
         updatePending
       };
     } catch (error) {

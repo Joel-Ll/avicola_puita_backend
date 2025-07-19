@@ -27,7 +27,7 @@ async function bootstrap() {
     optionsSuccessStatus: 204
   })
 
-  await app.listen(+configService.get('PORT'));
+  await app.listen(+configService.get('PORT') || 3000);
   logger.log(`App running on port ${configService.get('PORT')}`)
 }
 bootstrap();

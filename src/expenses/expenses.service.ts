@@ -24,7 +24,7 @@ export class ExpensesService {
     try {
       const expense = new this.expenseModel(createExpenseDto);
       await expense.save();
-      return 'Gasto registrado correctamente';
+      return 'Registrado correctamente';
     } catch (error) {
       this.handleError(error);
     }
@@ -43,14 +43,14 @@ export class ExpensesService {
 
   public async findOne(id: string) {
     const expense = await this.expenseModel.findById(id).select({ category: 1, description: 1, amount: 1, date: 1 });
-    if (!expense) throw new NotFoundException('Gasto no encontrado');
+    if (!expense) throw new NotFoundException('Registro no encontrado');
     return expense;
   }
 
   public async update(id: string, updateExpenseDto: UpdateExpenseDto) {
     const updated = await this.expenseModel.findByIdAndUpdate(id, updateExpenseDto);
     if (updated === null)
-      throw new NotFoundException('Gasto no encontrado');
+      throw new NotFoundException('Registro no encontrado');
 
     return 'Actualizado correctamente';
   }
@@ -58,7 +58,7 @@ export class ExpensesService {
   public async remove(id: string) {
     const updated = await this.expenseModel.findByIdAndDelete(id);
     if (updated === null)
-      throw new NotFoundException('Gasto no encontrado');
+      throw new NotFoundException('Registro no encontrado');
 
     return 'Eliminado correctamente';
   }

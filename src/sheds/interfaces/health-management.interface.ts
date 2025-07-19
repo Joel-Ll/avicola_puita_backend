@@ -1,3 +1,5 @@
+import z from 'zod';
+
 export type HealtReport = {
   lowsCount: number,
   lowsObsCount: number,
@@ -28,3 +30,13 @@ export type TimeLineHealth = {
   sicksCount: number,
   recoveredCount: number,
 }
+
+export const eventsSchemas = z.array(z.object({
+  shedId: z.object({
+    name: z.string()
+  }),
+  vaccine: z.string(),
+  illness: z.string(),
+  date: z.date(),
+  application: z.string(),
+}))

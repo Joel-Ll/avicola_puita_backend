@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
 import { Customer, CustomerSchema } from 'src/customers/schemas/customer.schema';
 import { Order, OrderSchema } from 'src/customers/schemas/order.schema';
 import { Payment, PaymentSchema } from 'src/customers/schemas/payment.schema';
@@ -10,9 +9,12 @@ import { Sale, SaleSchema } from 'src/sales/schemas/sale.schema';
 import { EggRegister, EggRegisterSchema } from 'src/sheds/schemas/egg-register.schema';
 import { DashboardService } from './dashboard.service';
 import { DashboardController } from './dashboard.controller';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
+  
   imports: [
+    AuthModule,
     MongooseModule.forFeature([
       { name: Customer.name, schema: CustomerSchema },
       { name: Order.name, schema: OrderSchema },

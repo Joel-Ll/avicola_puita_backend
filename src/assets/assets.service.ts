@@ -1,4 +1,10 @@
-import { ConflictException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { 
+  ConflictException, 
+  Injectable, 
+  InternalServerErrorException, 
+  Logger, 
+  NotFoundException 
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateAssetDto } from './dto/create-asset.dto';
@@ -29,7 +35,7 @@ export class AssetsService {
 
     try {
       await asset.save();
-      return 'Activo registrado correctamente';
+      return 'Registrado correctamente';
     } catch (error) {
       this.handleError(error)
     }
@@ -56,7 +62,7 @@ export class AssetsService {
   public async update(id: string, updateAssetDto: UpdateAssetDto) {
     const updated = await this.assetModel.findByIdAndUpdate(id, updateAssetDto);
     if (updated === null)
-      throw new NotFoundException('Activo no encontrado');
+      throw new NotFoundException('Registro no encontrado');
 
     return 'Actualizado correctamente';
   }
@@ -64,7 +70,7 @@ export class AssetsService {
   public async remove(id: string) {
     const updated = await this.assetModel.findByIdAndDelete(id);
     if (updated === null)
-      throw new NotFoundException('Activo no encontrado');
+      throw new NotFoundException('Registro no encontrado');
 
     return 'Eliminado correctamente';
   }

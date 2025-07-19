@@ -1,6 +1,5 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { count } from 'console';
 import { Model } from 'mongoose';
 import { Customer } from 'src/customers/schemas/customer.schema';
 import { Order } from 'src/customers/schemas/order.schema';
@@ -14,8 +13,6 @@ import { SummaryFinancialDto } from './dto/summary-financial.dto';
 
 @Injectable()
 export class DashboardService {
-  private logger = new Logger(DashboardService.name);
-
   constructor(
     @InjectModel(Customer.name)
     private readonly customerModel: Model<Customer>,
@@ -105,7 +102,8 @@ export class DashboardService {
     const registersByDate = new Map<string, number>();
     existingRegisters.forEach(register => {
       const dateStr = register.dateRegister.toISOString().split('T')[0];
-      registersByDate.set(dateStr, register.totalQuantity);
+      const currentTotal = registersByDate.get(dateStr) || 0;
+      registersByDate.set(dateStr, currentTotal + register.totalQuantity);
     });
 
     // Generar el rango completo de días
@@ -127,18 +125,21 @@ export class DashboardService {
     const { timeRange } = summaryFinancialDto;
 
     const endDate = new Date();
+    endDate.setHours(23, 59, 59, 999);
+
     const startDate = new Date();
-    startDate.setDate(endDate.getDate() - timeRange);
+    startDate.setDate(endDate.getDate() - (timeRange - 1));
+    startDate.setHours(0, 0, 0, 0);
 
     const [expenses, productsSold, payments] = await Promise.all([
       this.expenseModel.find({
         date: { $gte: startDate, $lte: endDate }
       }).exec(),
       this.productSoldModel.find({
-        date: { $gte: startDate, $lte: endDate }
+        createdAt: { $gte: startDate, $lte: endDate }
       }).exec(),
       this.paymentModel.find({
-        date: { $gte: startDate, $lte: endDate }
+        createdAt: { $gte: startDate, $lte: endDate }
       }).exec()
     ]);
 
@@ -165,9 +166,14 @@ export class DashboardService {
       totalIncome += payment.amount;
     });
 
+    
     // Inicializar todas las fechas en el rango
     const currentDate = new Date(startDate);
-    while (currentDate <= endDate) {
+    currentDate.setHours(0, 0, 0, 0); 
+    const finalDate = new Date(endDate);
+    finalDate.setHours(0, 0, 0, 0);
+
+    while (currentDate <= finalDate) {
       const dateKey = currentDate.toISOString().split('T')[0];
       dailySummary.set(dateKey, {
         date: new Date(currentDate),
@@ -186,16 +192,20 @@ export class DashboardService {
 
     // Procesar productos vendidos (ingresos)
     productsSold.forEach(product => {
+      const localDate = new Date(product.createdAt);
+      localDate.setHours(0, 0, 0, 0); 
       const dateKey = product.createdAt.toISOString().split('T')[0];
-      const dayData = dailySummary.get(dateKey) || { date: product.createdAt, income: 0, expense: 0 };
+      const dayData = dailySummary.get(dateKey) || { date: localDate, income: 0, expense: 0 };
       dayData.income += product.amount;
       dailySummary.set(dateKey, dayData);
     });
 
     // Procesar pagos (ingresos)
     payments.forEach(payment => {
-      const dateKey = payment.createdAt.toISOString().split('T')[0];
-      const dayData = dailySummary.get(dateKey) || { date: payment.createdAt, income: 0, expense: 0 };
+      const localDate = new Date(payment.createdAt);
+      localDate.setHours(0, 0, 0, 0);
+      const dateKey = localDate.toISOString().split('T')[0]; 
+      const dayData = dailySummary.get(dateKey) || { date: localDate, income: 0, expense: 0 };
       dayData.income += payment.amount;
       dailySummary.set(dateKey, dayData);
     });
@@ -209,6 +219,8 @@ export class DashboardService {
         expense: Number(item.expense.toFixed(2)),
       }));
 
+    
+    
     // Retornar los meses del rango de fechas
     const formatter = new Intl.DateTimeFormat('es-ES', { month: 'long' });
     const formatMonth = (date: Date) => {

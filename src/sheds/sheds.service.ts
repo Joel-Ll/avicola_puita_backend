@@ -10,13 +10,12 @@ import { Connection, Model } from 'mongoose';
 import { isMongoId } from 'class-validator';
 
 import { CreateShedDto, UpdateShedDto } from './dto';
-import { ReportShedDto } from './dto/sheds/report-shed.dto';
 import { SelectShedDto } from './dto/sheds/select-shed.dto';
 
 import { EggRegister } from './schemas/egg-register.schema';
 import { Event } from './schemas/event.schema';
 import { HealthManagement } from './schemas/health-management.schema';
-import { Low, LowDocument } from './schemas/low.schema';
+import { Low } from './schemas/low.schema';
 import { Recovered } from './schemas/recovered.schema';
 import { Shed, ShedDocument } from './schemas/shed.schema';
 import { Sick } from './schemas/sick.schema';
@@ -65,7 +64,7 @@ export class ShedsService {
 
     try {
       await shed.save();
-      return 'Galpón registrado';
+      return 'Registrado correctamente';
     } catch (error) {
       this.handleError(error)
     }
@@ -94,7 +93,7 @@ export class ShedsService {
     reqShed.slug = name.toLowerCase().replaceAll(' ', '_').replaceAll("'", '')
 
     if (reqShed.currentStock < 0)
-      throw new BadRequestException('La cantidad inicial no puede ser menor a la cantidad de bajas');
+      throw new BadRequestException('Cantidad no válida');
 
     const session = await this.connection.startSession()
     session.startTransaction();
@@ -140,7 +139,7 @@ export class ShedsService {
     try {
       await reqShed.save({ session });
       await session.commitTransaction();
-      return 'Los datos del galpón se actualizaron correctamente.';
+      return 'Actualizado correctamente';
     } catch (error) {
       await session.abortTransaction()
       this.handleError(error);
@@ -182,7 +181,7 @@ export class ShedsService {
 
       await session.commitTransaction();
       return {
-        message: 'Se eliminaron los registros correctamente',
+        message: 'Eliminado correctamente',
         countVaccineControlIds,
         countEventIds,
         countHealthManagementIds,
@@ -194,130 +193,6 @@ export class ShedsService {
     } finally {
       session.endSession();
     }
-  }
-
-  public async getReport(reportShedDto: ReportShedDto) {
-    const report = {
-      lows: 0,
-      sicks: 0,
-      recovered: 0,
-      data: [],
-    };
-
-    const { shedOption, date_range } = reportShedDto;
-    const startDate = new Date(date_range.from);
-    const endDate = new Date(date_range.to);
-
-    const dateRangeFilter = {
-      dateRegister: {
-        $gte: startDate,
-        $lte: endDate,
-      },
-    };
-
-    if (isMongoId(shedOption)) {
-      // Obtener registros
-      const lowsRegister = await this.lowModel.find({
-        shedId: shedOption,
-        ...dateRangeFilter,
-      });
-
-      const sicksRegister = await this.sickModel.find({
-        shedId: shedOption,
-        ...dateRangeFilter,
-      });
-
-      const recoveredRegister = await this.recoveredModel.find({
-        shedId: shedOption,
-        ...dateRangeFilter,
-      });
-
-      // Acumuladores totales
-      report.lows = lowsRegister.reduce((acc, low) => acc + low.quantity, 0);
-      report.sicks = sicksRegister.reduce((acc, sick) => acc + sick.quantity, 0);
-      report.recovered = recoveredRegister.reduce(
-        (acc, recovered) => acc + recovered.quantity, 0
-      );
-
-      const groupByMonth = (data: LowDocument[]) =>
-        data.reduce((acc, item) => {
-          const month = new Date(item.dateRegister).toLocaleString("default", {
-            month: "long",
-          });
-
-          if (!acc[month])
-            acc[month] = { month, lows: 0, sicks: 0, recovered: 0 };
-
-          acc[month].lows += item.quantity || 0;
-
-          return acc;
-        }, {} as Record<string, { month: string; lows: number; sicks: number; recovered: number }>);
-
-      const monthlyData = groupByMonth(lowsRegister);
-
-      sicksRegister.forEach((item) => {
-        const month = new Date(item.dateRegister).toLocaleString("default", {
-          month: "long",
-        });
-        monthlyData[month] = monthlyData[month] || { month, lows: 0, sicks: 0, recovered: 0 };
-        monthlyData[month].sicks += item.quantity || 0;
-      });
-
-      recoveredRegister.forEach((item) => {
-        const month = new Date(item.dateRegister).toLocaleString("default", {
-          month: "long",
-        });
-        monthlyData[month] = monthlyData[month] || { month, lows: 0, sicks: 0, recovered: 0 };
-        monthlyData[month].recovered += item.quantity || 0;
-      });
-
-      report.data = Object.values(monthlyData);
-      return report;
-    }
-
-    const lowsRegister = await this.lowModel.find({ ...dateRangeFilter });
-    const sicksRegister = await this.sickModel.find({ ...dateRangeFilter });
-    const recoveredRegister = await this.recoveredModel.find({ ...dateRangeFilter });
-
-    report.lows = lowsRegister.reduce((acc, low) => acc + low.quantity, 0);
-    report.sicks = sicksRegister.reduce((acc, sick) => acc + sick.quantity, 0);
-    report.recovered = recoveredRegister.reduce(
-      (acc, recovered) => acc + recovered.quantity, 0
-    );
-
-    const groupByMonth = (data: LowDocument[]) =>
-      data.reduce((acc, item) => {
-        const month = new Date(item.dateRegister).toLocaleString("default", {
-          month: "long",
-        });
-
-        if (!acc[month])
-          acc[month] = { month, lows: 0, sicks: 0, recovered: 0 };
-
-        acc[month].lows += item.quantity || 0;
-
-        return acc;
-      }, {} as Record<string, { month: string; lows: number; sicks: number; recovered: number }>);
-
-    const monthlyData = groupByMonth(lowsRegister);
-    sicksRegister.forEach((item) => {
-      const month = new Date(item.dateRegister).toLocaleString("default", {
-        month: "long",
-      });
-      monthlyData[month] = monthlyData[month] || { month, lows: 0, sicks: 0, recovered: 0 };
-      monthlyData[month].sicks += item.quantity || 0;
-    });
-
-    recoveredRegister.forEach((item) => {
-      const month = new Date(item.dateRegister).toLocaleString("default", {
-        month: "long",
-      });
-      monthlyData[month] = monthlyData[month] || { month, lows: 0, sicks: 0, recovered: 0 };
-      monthlyData[month].recovered += item.quantity || 0;
-    });
-
-    report.data = Object.values(monthlyData);
-    return report;
   }
 
   public async getSelect(selectShedDto: SelectShedDto) {
@@ -369,7 +244,7 @@ export class ShedsService {
       await this.lowModel.deleteMany({ shedId: reqShed._id }).session(session);
       await this.sickModel.deleteMany({ shedId: reqShed._id }).session(session);
       await this.recoveredModel.deleteMany({ shedId: reqShed._id }).session(session);
-      await this.eggRegisterModel.deleteMany({ shedId: reqShed._id }).session(session);
+      await this.eggRegisterModel.deleteMany({ shed: reqShed._id }).session(session);
 
       if (reqShed.vaccineControl) {
         const vaccineControl = await this.vaccineControlModel.findById(reqShed.vaccineControl).session(session);
@@ -387,7 +262,7 @@ export class ShedsService {
       }
       await reqShed.save({ session });
       await session.commitTransaction();
-      return 'Los datos del galpón se reiniciaron para el nuevo ciclo.';
+      return 'Reiniciado correctamente';
     } catch (error) {
       await session.abortTransaction();
       this.handleError(error);
@@ -399,9 +274,9 @@ export class ShedsService {
   public async summaryRegister() {
     try {
       const [lows, sicks, recovereds] = await Promise.all([
-        this.lowModel.find().populate('shedId', { name: true }).sort({ createdAt: -1 }).limit(4),
-        this.sickModel.find().populate('shedId', { name: true }).sort({ createdAt: -1 }).limit(4),
-        this.recoveredModel.find().populate('shedId', { name: true }).sort({ createdAt: -1 }).limit(4),
+        this.lowModel.find().populate('shedId', { name: true }).sort({ createdAt: -1 }).limit(5),
+        this.sickModel.find().populate('shedId', { name: true }).sort({ createdAt: -1 }).limit(5),
+        this.recoveredModel.find().populate('shedId', { name: true }).sort({ createdAt: -1 }).limit(5),
       ]);
       const combinedRecords = [...lows, ...sicks, ...recovereds];
       combinedRecords.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());

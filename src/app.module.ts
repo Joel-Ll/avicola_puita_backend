@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ScheduleModule } from '@nestjs/schedule';
 
 import { ShedsModule } from './sheds/sheds.module';
 import { CommonModule } from './common/common.module';
@@ -17,6 +18,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
   imports: [
     ConfigModule.forRoot(),
     MongooseModule.forRoot(process.env.MONGO_URI),
+    ScheduleModule.forRoot(),
     ShedsModule,
     CommonModule,
     ExpensesModule,

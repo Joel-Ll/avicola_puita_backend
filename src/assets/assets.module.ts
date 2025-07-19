@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { AuthModule } from 'src/auth/auth.module';
 import { AssetsService } from './assets.service';
 import { AssetsController } from './assets.controller';
 import { Asset, AssetSchema } from './schemas/asset.schema';
 import { PrinterModule } from 'src/printer/printer.module';
-import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [

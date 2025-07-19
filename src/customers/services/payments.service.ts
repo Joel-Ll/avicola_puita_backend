@@ -1,12 +1,12 @@
 import { Response } from 'express';
 import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
-
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
+
 import { Connection, Model } from 'mongoose';
+import { Workbook } from 'exceljs';
 import { Payment } from '../schemas/payment.schema';
 import { PaymentsReporExcelDto } from '../dto/export-to-excel.dto';
 import { paymentsSchema } from '../interface/payment.interface';
-import { Workbook } from 'exceljs';
 import { Order } from '../schemas/order.schema';
 import { UpdatePaymentDto } from '../dto/update-payment.dto';
 
@@ -63,7 +63,6 @@ export class PaymentsService {
     if (!order)
       throw new NotFoundException('Registro no encontrado');
 
-
     return payment;
   }
 
@@ -82,7 +81,6 @@ export class PaymentsService {
 
     const session = await this.connection.startSession();
     session.startTransaction();
-    // 30             30       10
     order.balance -= (amount - payment.amount);
     payment.amount = amount;
     payment.method = method;
@@ -92,6 +90,9 @@ export class PaymentsService {
 
     if (order.balance > 0)
       order.state = 'to_pay';
+
+    if (order.balance === 0)
+      order.state = 'completed';
 
     try {
       await payment.save({ session });
@@ -107,9 +108,6 @@ export class PaymentsService {
     } finally {
       await session.endSession();
     }
-
-    //  88 -> 80 = 8
-    //  88 -> 10 => 
   }
 
   public async deletePayment(idPayment: string) {

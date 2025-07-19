@@ -6,7 +6,6 @@ import { Auth } from './decorators/auth.decorator';
 import { GetUser } from './decorators/get-user.decorator';
 import { UserDocument } from 'src/users/schemas/user.schema';
 
-
 @Controller('auth')
 export class AuthController {
   constructor(

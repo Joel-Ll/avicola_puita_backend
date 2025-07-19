@@ -30,7 +30,7 @@ export class AuthService {
     const { username, password } = signInDto;
     const user = await this.userModel.findOne({ username });
     if (!user)
-      throw new BadRequestException('Usuario no encontrado');
+      throw new BadRequestException('Credenciales incorrectas. Verifique su usuario y contraseña.');
 
     if(!user.isActive) {
       throw new UnauthorizedException('Usuario inactivo');
@@ -38,7 +38,7 @@ export class AuthService {
 
     const isPasswordCorrect = await Hash.checkPassword(password, user.password);
     if (!isPasswordCorrect)
-      throw new UnauthorizedException('Contraseña incorrecta');
+      throw new UnauthorizedException('Credenciales incorrectas. Verifique su usuario y contraseña.');
 
     try {
       return this.generateJWT({id: user.id})

@@ -29,7 +29,7 @@ export class CustomersService {
     try {
       const customer = new this.customerModel(createCustomerDto);
       await customer.save();
-      return 'Cliente registrado correctamente';
+      return 'Registrado correctamente';
     } catch (error) {
       this.handleError(error);
     }
@@ -53,15 +53,15 @@ export class CustomersService {
         throw new BadRequestException('El número de teléfono ya está en uso');
     }
     await customer.updateOne(updateCustomerDto);
-    return 'Cliente actualizado correctamente';
+    return 'Actualizado correctamente';
   }
 
   public async remove(customer: CustomerDocument) {
     if (customer.orders.length > 0)
-      throw new BadRequestException('Acción no válida');
+      throw new BadRequestException('Acción no válida. El cliente tiene asociado algunos pedidos');
 
     await customer.deleteOne();
-    return 'Cliente eliminado correctamente';
+    return 'Eliminado correctamente';
   }
 
   private handleError(error: any) {

@@ -8,8 +8,10 @@ import { ParseMongoIdPipe } from 'src/common/pipes/parse-mongo-id.pipe';
 import { CompletedOrderDto } from '../dto/completed-order.dto';
 import { DeliveryDateDto } from '../dto/delivery-date.dto';
 import { PaymentGuideDto } from '../dto/payment-guide.dto';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('orders')
+@Auth()
 export class OrdersController {
   
   constructor(

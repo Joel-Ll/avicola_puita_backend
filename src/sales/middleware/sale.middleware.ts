@@ -1,8 +1,8 @@
 import type {Request, Response, NextFunction} from 'express';
 import { BadRequestException, Injectable, InternalServerErrorException, NestMiddleware, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Sale, SaleDocument } from '../schemas/sale.schema';
 import { Model, isValidObjectId } from 'mongoose';
+import { Sale, SaleDocument } from '../schemas/sale.schema';
 
 @Injectable()
 export class SaleMiddleware implements NestMiddleware {

@@ -27,7 +27,7 @@ export class SicksService {
 
     shed.sicksCount = shed.sicksCount + quantity;
     if (shed.sicksCount > shed.currentStock)
-      throw new ConflictException('La cantidad en observación debe ser menor a la cantidad actual');
+      throw new ConflictException('Cantidad no válida');
 
     try {
       await register.save();

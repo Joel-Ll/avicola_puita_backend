@@ -1,4 +1,4 @@
-import { IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsMongoId, IsNotEmpty, IsNumber, IsOptional } from "class-validator";
 
 export class CreateSoldProductDto {
   @IsMongoId({ message: 'ID no válido' })

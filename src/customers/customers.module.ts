@@ -16,9 +16,11 @@ import { Payment, PaymentSchema } from './schemas/payment.schema';
 import { PaymentsService } from './services/payments.service';
 import { PaymentsController } from './controllers/payments.controller';
 import { PrinterModule } from 'src/printer/printer.module';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
+    AuthModule,
     MongooseModule.forFeature([
       { name: Customer.name, schema: CustomerSchema },
       { name: Order.name, schema: OrderSchema },

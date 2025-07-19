@@ -8,8 +8,10 @@ import { ParseMongoIdPipe } from 'src/common/pipes/parse-mongo-id.pipe';
 import { CreateSoldProductDto } from './dto/create-sold-producto.dto';
 import { ProductsSoldDto } from './dto/sales-history.dto';
 import { EditSoldProductDto } from './dto/edit-sold-product.dto';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('sales')
+@Auth()
 export class SalesController {
   constructor(private readonly salesService: SalesService) { }
 

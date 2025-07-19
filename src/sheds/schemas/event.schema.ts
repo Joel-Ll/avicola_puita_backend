@@ -1,11 +1,17 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { HydratedDocument } from "mongoose";
+import { HydratedDocument, Schema as SchemaType, Types } from 'mongoose';
 import { EventState, eventState } from "src/common/constants/event-state";
 
 export type EventDocument = HydratedDocument<Event>
 
 @Schema()
 export class Event {
+  @Prop({
+    type: SchemaType.Types.ObjectId,
+    ref: 'Shed'
+  })
+  shedId: Types.ObjectId
+
   @Prop({ required: true })
   date: Date;
 

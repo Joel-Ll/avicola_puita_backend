@@ -1,11 +1,13 @@
+import { Response } from 'express';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Res } from '@nestjs/common';
 import { PaymentsService } from '../services/payments.service';
 import { PaymentsReporExcelDto } from '../dto/export-to-excel.dto';
-import { Response } from 'express';
 import { ParseMongoIdPipe } from 'src/common/pipes/parse-mongo-id.pipe';
 import { UpdatePaymentDto } from '../dto/update-payment.dto';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('payments')
+@Auth()
 export class PaymentsController {
   constructor(
     private readonly paymentsService: PaymentsService

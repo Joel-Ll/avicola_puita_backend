@@ -64,7 +64,7 @@ export class OrdersService {
       await customer.save({ session });
       await session.commitTransaction();
       return {
-        message: 'Orden registrado',
+        message: 'Pedido iniciado',
         idOrder: order.id
       };
     } catch (error) {
@@ -218,7 +218,7 @@ export class OrdersService {
 
     try {
       await order.save();
-      return 'Cambios realizados...';
+      return 'Registrado correctamente';
     } catch (error) {
       this.handleError(error);
     }
@@ -290,7 +290,7 @@ export class OrdersService {
     const egg = await this.eggModel.findById(idEgg);
 
     if (!egg)
-      throw new BadRequestException('Item no encontrado');
+      throw new BadRequestException('Producto no encontrado');
 
     totalQuantity = unitQuantity + (quantityPerBox * 12);
 
@@ -303,7 +303,7 @@ export class OrdersService {
     });
 
     if (existingItems.length > 0) {
-      throw new BadRequestException('Este producto ya fue registrado en el pedido');
+      throw new BadRequestException('El producto ya fue registrado al pedido');
     }
 
     const session = await this.connection.startSession();
@@ -315,7 +315,6 @@ export class OrdersService {
       quantityPerBox,
       detail: `Huevo "${egg.size}": ${quantityPerBox}C - ${unitQuantity}M`,
       totalPrice: totalPrice
-      // totalPrice: (unitQuantity * egg.unit_price) + (quantityPerBox * egg.box_price),
     });
 
     egg.quantity -= totalQuantity
@@ -329,7 +328,7 @@ export class OrdersService {
       await egg.save({ session });
       await order.save({ session });
       await session.commitTransaction();
-      return 'Item agregado correctamente';
+      return 'Producto agregado';
     } catch (error) {
       await session.abortTransaction();
       this.handleError(error);
@@ -343,7 +342,7 @@ export class OrdersService {
     let totalQuantity = 0;
 
     if (!item)
-      throw new NotFoundException('Item no encontrado');
+      throw new NotFoundException('Producto no encontrado');
 
     const egg = await this.eggModel.findById(item.idEgg);
     if (!egg)

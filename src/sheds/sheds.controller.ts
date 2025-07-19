@@ -20,7 +20,6 @@ import { GetRateDto } from './dto/sheds/get-rate.dto';
 import { ParseMongoIdPipe } from 'src/common/pipes/parse-mongo-id.pipe';
 import { RegisterEggProductionDto } from './dto/egg-production/register-egg-production.dto';
 import { RegisterWeightDto } from './dto/sheds/register-weight.dto';
-import { ReportShedDto } from './dto/sheds/report-shed.dto';
 import { RescheduleEventsDto } from './dto/events/reschedule-events.dto';
 import { SelectShedDto } from './dto/sheds/select-shed.dto';
 import { UpdateEggDto } from './dto/eggs/update-egg.dto';
@@ -80,11 +79,6 @@ export class ShedsController {
   @Delete()
   remove(@Body() ids: string[]) {
     return this.shedsService.removeMany(ids);
-  }
-
-  @Post('reports/sheds')
-  getReport(@Body() reportShedDto: ReportShedDto) {
-    return this.shedsService.getReport(reportShedDto);
   }
 
   @Post('select/report')

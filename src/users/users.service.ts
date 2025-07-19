@@ -91,7 +91,7 @@ export class UsersService implements OnModuleInit {
     const user = new this.userModel(createUserDto);
     const userExists = await this.userModel.findOne({ username: user.username })
     if (userExists)
-      throw new ConflictException('El nombre de usuario ya esta registrado');
+      throw new ConflictException('El nombre de usuario ya está registrado');
 
     user.password = await Hash.hashPassword(user.password);
 
@@ -140,7 +140,7 @@ export class UsersService implements OnModuleInit {
       if (password) user.password = await Hash.hashPassword(password);
 
       await user.save();
-      return 'Usuario actualizado correctamente';
+      return 'Actualizado correctamente';
     } catch (error) {
       this.handleError(error);
     }
@@ -150,7 +150,7 @@ export class UsersService implements OnModuleInit {
     const updated = await this.userModel.findByIdAndDelete(id);
     if (updated === null)
       throw new NotFoundException('Usuario no encontrado');
-    return 'Usuario eliminado correctamente';
+    return 'Eliminado correctamente';
   }
 
   private handleError(error: any) {

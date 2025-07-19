@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Connection, Model } from 'mongoose';
 import { UpdateSaleDto } from './dto/update-sale.dto';
-import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Sale, SaleDocument } from './schemas/sale.schema';
 import { saleState } from 'src/common/constants/sale-state';
 import { CreateItemDto } from 'src/customers/dto/create-item.dto';
@@ -328,14 +328,28 @@ export class SalesService {
     const session = await this.connection.startSession();
     session.startTransaction();
 
-    const productSold = await this.productSoldModel.findById(idProduct);
-    const sale = await this.saleModel.findById(productSold.idSale);
+    const productSold = await this.productSoldModel.findById(idProduct).session(session);
+    if (!productSold) throw new BadRequestException('Registro no encontrado');
+
+    const sale = await this.saleModel.findById(productSold.idSale).session(session).populate({
+      path: 'saleItems',
+      populate: {
+        path: 'idEgg',
+        model: 'Egg'
+      }
+    });
+    if (!sale) throw new BadRequestException('Registro no encontrado');
 
     if (sale.state === 'completed' || sale.state === 'finalized')
       throw new BadRequestException('La venta ya fue completada');
 
-    const saleItem = await this.saleItemModel.findOne({ idEgg: productSold.idEgg });
-    const egg = await this.eggModel.findById(productSold.idEgg);
+    const items = sale.saleItems as unknown as (SaleItemDocument & { idEgg: EggDocument })[];
+    const saleItem = items.find(item => item.idEgg.id.toString() === productSold.idEgg.toString());
+    const egg = await this.eggModel.findById(productSold.idEgg).session(session);
+
+    if (!saleItem || !egg) {
+      throw new BadRequestException('Datos relacionados no encontrados');
+    }
 
     const totalQuantity = productSold.unitQuantity + (productSold.quantityPerBox * 12);
     sale.soldTotalPrice -= productSold.amount;
@@ -352,8 +366,8 @@ export class SalesService {
     sale.markModified('detailSold');
 
     try {
-      await saleItem.save({ session });
       await sale.save({ session });
+      await saleItem.save({ session });
       await productSold.deleteOne({ session });
       await session.commitTransaction();
       return {

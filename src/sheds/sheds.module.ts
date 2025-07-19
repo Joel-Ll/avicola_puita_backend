@@ -1,5 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule } from '@nestjs/config';
 
 import { Egg, EggSchema } from './schemas/egg.schema';
 import { EggRegister, EggRegisterSchema } from './schemas/egg-register.schema';
@@ -21,11 +22,15 @@ import { SicksService } from './services/sicks.service';
 import { VaccineControl, VaccineControlSchema } from './schemas/vaccine-control.schema';
 import { VaccioneControlService } from './services/vaccione-control.service';
 import { AuthModule } from 'src/auth/auth.module';
+import { EmailServiceService } from './services/email-service.service';
+import { User, UserSchema } from 'src/users/schemas/user.schema';
 
 @Module({
   imports: [
     AuthModule,
+    ConfigModule,
     MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
       { name: Egg.name, schema: EggSchema },
       { name: EggRegister.name, schema: EggRegisterSchema },
       { name: Event.name, schema: EventSchema },
@@ -47,6 +52,7 @@ import { AuthModule } from 'src/auth/auth.module';
     ShedsService,
     SicksService,
     VaccioneControlService,
+    EmailServiceService,
   ],
 })
 

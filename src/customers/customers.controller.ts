@@ -3,8 +3,10 @@ import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { CustomersService } from './customers.service';
 import { ReqCustomer } from './interface/customer.interface';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('customers')
+@Auth()
 export class CustomersController {
   constructor(private readonly customersService: CustomersService) { }
 

@@ -4,7 +4,7 @@ export const expenseCategory = {
   TRANSPORT: 'transport',
   WAGES: 'wages',
   SERVICES: 'services',
-  INFRASTRUCTURE: 'infrastructure'
+  EQUIPMENT: 'equipment'
 } as const
 
 export type ExpenseCategory = typeof expenseCategory[keyof typeof expenseCategory]
