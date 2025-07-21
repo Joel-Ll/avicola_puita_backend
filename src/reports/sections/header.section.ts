@@ -3,9 +3,9 @@ import { es } from "date-fns/locale";
 import { Content } from "pdfmake/interfaces";
 
 const logo: Content = {
-  image: 'src/public/logo-avicola.png',
+  image: 'src/public/img-logo.png',
   width: 100,
-  height: 110,
+  height: 100,
   alignment: 'center',
   margin: [0, 0, 0, 0]
 }

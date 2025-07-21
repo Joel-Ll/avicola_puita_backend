@@ -2,7 +2,7 @@ import { IsNumber, Max, Min } from "class-validator";
 
 export class RegisterWeightDto {
   @IsNumber()
-  @Min(2)
+  @Min(2, {message: 'Semana no válida'})
   @Max(32)
   week: number;
 
