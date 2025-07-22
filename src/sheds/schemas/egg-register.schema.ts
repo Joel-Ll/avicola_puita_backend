@@ -3,7 +3,15 @@ import { HydratedDocument, Schema as SchemaType, Types } from 'mongoose';
 
 export type EggRegisterDocument = HydratedDocument<EggRegister>
 
-@Schema({timestamps: true})
+@Schema({
+  timestamps: {
+    currentTime: () => {
+      const now = new Date();
+      const boliviaOffset = -4 * 60 * 60 * 1000;
+      return new Date(now.getTime() + boliviaOffset);
+    },
+  }
+})
 export class EggRegister {
   @Prop({
     type: SchemaType.Types.ObjectId,
@@ -20,7 +28,7 @@ export class EggRegister {
   @Prop({ type: Date })
   dateRegister: Date;
 
-  @Prop({ type: Number, default: 0})
+  @Prop({ type: Number, default: 0 })
   unitQuantity: number;
 
   @Prop({ type: Number, default: 0 })

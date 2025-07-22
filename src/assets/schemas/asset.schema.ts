@@ -3,13 +3,21 @@ import { HydratedDocument } from "mongoose";
 
 export type AssetDocument = HydratedDocument<Asset>
 
-@Schema({timestamps: true})
+@Schema({
+  timestamps: {
+    currentTime: () => {
+      const now = new Date();
+      const boliviaOffset = -4 * 60 * 60 * 1000;
+      return new Date(now.getTime() + boliviaOffset);
+    },
+  }
+})
 export class Asset {
   @Prop({
     type: String,
     required: true,
   })
-  name: string; 
+  name: string;
 
   @Prop({
     required: true,

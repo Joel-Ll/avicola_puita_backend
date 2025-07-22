@@ -4,7 +4,15 @@ import { SaleState, saleState } from "src/common/constants/sale-state";
 
 export type SaleDocument = HydratedDocument<Sale>
 
-@Schema({ timestamps: true })
+@Schema({
+  timestamps: {
+    currentTime: () => {
+      const now = new Date();
+      const boliviaOffset = -4 * 60 * 60 * 1000;
+      return new Date(now.getTime() + boliviaOffset);
+    },
+  }
+})
 export class Sale {
   @Prop({
     type: Date,

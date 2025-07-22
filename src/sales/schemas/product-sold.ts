@@ -5,7 +5,15 @@ import { EggDocument } from "src/sheds/schemas/egg.schema";
 
 export type ProductSaleDocument = HydratedDocument<ProductSold>
 
-@Schema({ timestamps: true })
+@Schema({
+  timestamps: {
+    currentTime: () => {
+      const now = new Date();
+      const boliviaOffset = -4 * 60 * 60 * 1000;
+      return new Date(now.getTime() + boliviaOffset);
+    },
+  }
+})
 export class ProductSold {
   @Prop({
     type: SchemaType.ObjectId,

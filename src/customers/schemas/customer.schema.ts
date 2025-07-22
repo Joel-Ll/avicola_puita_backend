@@ -3,7 +3,15 @@ import { HydratedDocument, Schema as SchemaType, Types } from 'mongoose';
 
 export type CustomerDocument = HydratedDocument<Customer>
 
-@Schema({timestamps: true})
+@Schema({
+  timestamps: {
+    currentTime: () => {
+      const now = new Date();
+      const boliviaOffset = -4 * 60 * 60 * 1000;
+      return new Date(now.getTime() + boliviaOffset);
+    },
+  }
+})
 export class Customer {
   @Prop({
     type: String,

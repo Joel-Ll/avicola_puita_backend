@@ -4,7 +4,17 @@ import { methodToPay } from "src/common/constants/method-to-pay";
 
 export type PaymentDocument = HydratedDocument<Payment>
 
-@Schema({timestamps: true})
+// TODO: Ajustar las fechas...
+@Schema({
+  timestamps: {
+    currentTime: () => {
+      const now = new Date();
+      const boliviaOffset = -4 * 60 * 60 * 1000;
+      return new Date(now.getTime() + boliviaOffset);
+    },
+  },
+})
+
 export class Payment {
   @Prop({
     type: SchemaType.ObjectId,

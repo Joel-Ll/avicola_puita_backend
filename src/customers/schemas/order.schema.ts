@@ -4,7 +4,15 @@ import { OrderState, orderState } from "src/common/constants/order-state";
 
 export type OrderDocument = HydratedDocument<Order>
 
-@Schema({ timestamps: true, autoIndex: true })
+@Schema({
+  timestamps: {
+    currentTime: () => {
+      const now = new Date();
+      const boliviaOffset = -4 * 60 * 60 * 1000;
+      return new Date(now.getTime() + boliviaOffset);
+    },
+  }, autoIndex: true
+})
 export class Order {
   @Prop({
     type: Date,

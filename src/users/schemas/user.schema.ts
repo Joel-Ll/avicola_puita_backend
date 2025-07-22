@@ -4,7 +4,15 @@ import { UserRole } from "../interface/user.interface";
 
 export type UserDocument = HydratedDocument<User>
 
-@Schema({timestamps: true})
+@Schema({
+  timestamps: {
+    currentTime: () => {
+      const now = new Date();
+      const boliviaOffset = -4 * 60 * 60 * 1000;
+      return new Date(now.getTime() + boliviaOffset);
+    },
+  }
+})
 export class User {
   @Prop({
     type: String,

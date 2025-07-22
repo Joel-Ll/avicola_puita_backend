@@ -4,7 +4,15 @@ import { ExpenseCategory, expenseCategory } from 'src/common/constants/expense-c
 
 export type ExpenseDocument = HydratedDocument<Expense>
 
-@Schema({ timestamps: true })
+@Schema({
+  timestamps: {
+    currentTime: () => {
+      const now = new Date();
+      const boliviaOffset = -4 * 60 * 60 * 1000;
+      return new Date(now.getTime() + boliviaOffset);
+    },
+  }
+})
 export class Expense {
   @Prop({
     type: String,

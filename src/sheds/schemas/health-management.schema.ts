@@ -5,7 +5,15 @@ import type { Growth } from "../interfaces/health-management.interface";
 
 export type HealthManagementDocument = HydratedDocument<HealthManagement>
 
-@Schema({ timestamps: true })
+@Schema({
+  timestamps: {
+    currentTime: () => {
+      const now = new Date();
+      const boliviaOffset = -4 * 60 * 60 * 1000;
+      return new Date(now.getTime() + boliviaOffset);
+    },
+  }
+})
 export class HealthManagement {
   @Prop({
     type: SchemaType.Types.ObjectId,
@@ -16,10 +24,10 @@ export class HealthManagement {
 
   @Prop({
     type: [{
-      week: {type: Number},
-      minWeight: {type: Number},
-      maxWeight: {type: Number},
-      currentWeight: {type: Number || null}
+      week: { type: Number },
+      minWeight: { type: Number },
+      maxWeight: { type: Number },
+      currentWeight: { type: Number || null }
     }],
     default: []
   })
