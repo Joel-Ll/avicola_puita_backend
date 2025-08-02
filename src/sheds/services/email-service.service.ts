@@ -55,8 +55,8 @@ export class EmailServiceService {
       if (result.data.length === 0) return;
       try {
         await this.transporter.sendMail({
-          from: 'Avicola Puita <admin@avicolapuita.com>',
-          to: user.email,
+          from: 'Avícola Puita <notificaciones@avicolapuita.com>',
+          to: `${user.email}`,
           subject: '🛎️ Recordatorio: Vacunación Pendiente',
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e1e1e1; border-radius: 8px;">
@@ -69,31 +69,29 @@ export class EmailServiceService {
                 <p>Hola <strong>${user.username}</strong>,</p>
                 <p>Tienes <strong>${result.data.length} vacuna(s)</strong> programada(s) para mañana:</p>
                 
-                <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+                <table style="width: 100%; border-collapse: collapse; margin: 8px 0;">
                   <thead>
                     <tr style="background-color: #f2f2f2;">
-                      <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Galpón</th>
-                      <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Vacuna</th>
-                      <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Enfermedad</th>
-                      <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Fecha</th>
-                      <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Método</th>
+                      <th style="padding: 10px; text-align: left; border: 1px solid #ddd; font-size: 11px;">Galpón</th>
+                      <th style="padding: 10px; text-align: left; border: 1px solid #ddd; font-size: 11px;">Vacuna</th>
+                      <th style="padding: 10px; text-align: left; border: 1px solid #ddd; font-size: 11px;">Enfermedad</th>
+                      <th style="padding: 10px; text-align: left; border: 1px solid #ddd; font-size: 11px;">Fecha</th>
                     </tr>
                   </thead>
                   <tbody>
                     ${result.data.map((event) => `
                       <tr>
-                        <td style="padding: 10px; border: 1px solid #ddd;">${event.shedId.name || 'N/A'}</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">${event.vaccine || 'N/A'}</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">${event.illness || 'N/A'}</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">${new Date(event.date).toLocaleDateString('es-BO', { timeZone: 'America/La_Paz' })}</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">${event.application || 'N/A'}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd; font-size: 11px;">${event.shedId.name || 'N/A'}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd; font-size: 11px;">${event.vaccine || 'N/A'}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd; font-size: 11px;">${event.illness || 'N/A'}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd; font-size: 11px;">${new Date(event.date).toLocaleDateString('es-BO', { timeZone: 'America/La_Paz' })}</td>
                       </tr>
                     `).join('')}
                   </tbody>
                 </table>
       
                 <p style="margin-top: 20px;">
-                  <a href="http://localhost:5173/sheds/vaccine-control" style="display: inline-block; background-color: #e67e22; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Ver en plataforma</a>
+                  <a href="https://admin.avicolapuita.com/sheds/vaccine-control" style="display: inline-block; background-color: #e67e22; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Ver en plataforma</a>
                 </p>
               </div>
             </div>

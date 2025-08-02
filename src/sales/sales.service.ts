@@ -151,6 +151,7 @@ export class SalesService {
       throw new BadRequestException('Producto no encontrado');
 
     totalQuantity = unitQuantity + (quantityPerBox * 12);
+
     if (totalQuantity > egg.quantity)
       throw new BadRequestException('Cantidad no válida');
 
@@ -168,7 +169,7 @@ export class SalesService {
     const item = new this.saleItemModel({
       idEgg,
       totalQuantity,
-      detail: `Huevo "${egg.size}": ${totalQuantity}M`,
+      detail: `Huevo "${egg.size}": ${Math.floor(totalQuantity / 12)}C - ${totalQuantity % 12}M`,
     });
 
     egg.quantity -= totalQuantity
@@ -249,7 +250,8 @@ export class SalesService {
     session.startTransaction();
 
     saleItem.totalQuantity -= totalToSell;
-    saleItem.detail = `Huevo "${saleItem.idEgg.size}": ${saleItem.totalQuantity}M`;
+
+    saleItem.detail = `Huevo "${saleItem.idEgg.size}": ${Math.floor(saleItem.totalQuantity / 12)}C - ${saleItem.totalQuantity % 12}M`;
 
 
     const newProductSold = new this.productSoldModel({
@@ -354,7 +356,7 @@ export class SalesService {
     const totalQuantity = productSold.unitQuantity + (productSold.quantityPerBox * 12);
     sale.soldTotalPrice -= productSold.amount;
     saleItem.totalQuantity += totalQuantity;
-    saleItem.detail = `Huevo "${egg.size}": ${saleItem.totalQuantity}M`;
+    saleItem.detail = `Huevo "${egg.size}": ${Math.floor(saleItem.totalQuantity / 12)}C - ${saleItem.totalQuantity % 12}M`;
 
     sale.detailSold = updateDetailSold(
       sale.detailSold,
