@@ -13,8 +13,6 @@ interface ReportOptions {
 
 export const getSaleGuide = (options: ReportOptions): TDocumentDefinitions => {
   const { title, subTitle, data, date } = options;
-  const rows = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
-
   return {
     pageOrientation: 'portrait',
     pageSize: 'LETTER',
@@ -30,13 +28,15 @@ export const getSaleGuide = (options: ReportOptions): TDocumentDefinitions => {
         marginTop: -10,
         table: {
           headerRows: 1,
-          widths: ['*', '*', '*'],
+          widths: ['*', '*', '*', '*', '*'],
           body: [
-            [{ text: 'Productos enviados', bold: true, fontSize: 10}, { text: 'Precio Maple', bold: true, fontSize: 10 }, { text: 'Precio Caja', bold: true, fontSize: 10}],
+            [{ text: 'Tamaño', bold: true, fontSize: 10 }, { text: 'Precio Caja', bold: true, fontSize: 10 }, { text: 'Precio 1/2 Caja', bold: true, fontSize: 10 }, { text: 'Precio 1/4 Caja', bold: true, fontSize: 10 }, { text: 'Precio Maple', bold: true, fontSize: 10 }],
             ...data.saleItems.map((item) => [
-              { text: item.detail, fontSize: 10},
-              { text: `Bs. ${item.idEgg.unit_price}`, bold: true, fontSize: 10},
-              { text: `Bs. ${item.idEgg.box_price}`, bold: true, fontSize: 10},
+              { text: item.detail.split(':')[0], fontSize: 10 },
+              { text: `Bs. ${item.idEgg.box_price}`, bold: true, fontSize: 10 },
+              { text: `Bs. ${item.idEgg.box_price / 2}`, bold: true, fontSize: 10 },
+              { text: `Bs. ${item.idEgg.box_price / 4}`, bold: true, fontSize: 10 },
+              { text: `Bs. ${item.idEgg.unit_price}`, bold: true, fontSize: 10 },
             ])
           ]
         },
@@ -60,18 +60,56 @@ export const getSaleGuide = (options: ReportOptions): TDocumentDefinitions => {
         marginTop: 20,
         table: {
           headerRows: 1,
-          widths: [80, 80, 80, 80, 180],
+          widths: [90, 80, 80, 80, 170],
           body: [
-            [{ text: 'Tamaño', bold: true, fontSize: 11}, { text: 'Cantidad', bold: true, fontSize: 11 }, { text: 'Monto', bold: true, fontSize: 11 }, { text: 'Método', bold: true, fontSize: 11 }, { text: 'Observaciones', bold: true, fontSize: 11}],
-            ...rows.map(() => [
-              { text: '' },
-              { text: '' },
-              { text: '' },
-              { text: '' },
-              { text: '' },
-            ])
+            [
+              { text: 'Llevó', bold: true, fontSize: 11 },
+              { text: 'Regresó', bold: true, fontSize: 11 },
+              { text: 'Vendido', bold: true, fontSize: 11 },
+              { text: 'Total (Bs.)', bold: true, fontSize: 11 },
+              { text: 'Observaciones', bold: true, fontSize: 11 }
+            ],
+            // Filas para cada producto
+            ...data.saleItems.map((item) => [
+              { text: item.detail, fontSize: 10 },
+              { text: '', fontSize: 10, color: '#666' },
+              { text: '', fontSize: 10, color: '#666' },
+              { text: 'Bs. _____', fontSize: 10, color: '#666' },
+              { text: '', fontSize: 10 }
+            ]),
+            // Fila para el SUBTOTAL (destacada)
+            [
+              { text: 'SUBTOTAL:', bold: true, fontSize: 10, colSpan: 3, alignment: 'right' },
+              {}, // Celda vacía por el colSpan
+              {}, // Celda vacía por el colSpan
+              {
+                text: 'Bs. _____',
+                bold: true,
+                fontSize: 10,
+                alignment: 'left',
+                fillColor: '#f0f0f0',
+                border: [true, true, true, true],
+                borderColor: '#333',
+                borderWidth: 1
+              },
+              { text: '', fontSize: 10 }
+            ]
           ]
         }
+        // table: {
+        //   headerRows: 1,
+        //   widths: [80, 80, 80, 80, 180],
+        //   body: [
+        //     [{ text: 'Tamaño', bold: true, fontSize: 11}, { text: 'Cajas', bold: true, fontSize: 11 }, { text: 'Maples', bold: true, fontSize: 11 }, { text: 'Total (Bs.)', bold: true, fontSize: 11 }, { text: 'Observaciones', bold: true, fontSize: 11}],
+        //     ...data.saleItems.map((item) => [
+        //       { text: item.detail, fontSize: 10 },
+        //       { text: '' },
+        //       { text: '' },
+        //       { text: '' },
+        //       { text: '' },
+        //     ])
+        //   ]
+        // }
       },
     ]
   }

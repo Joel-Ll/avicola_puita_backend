@@ -53,7 +53,7 @@ export class UsersService implements OnModuleInit {
 
     try {
       await admin.save();
-      console.log('Usuario administrador creado correctamente');
+      this.logger.log('Usuario administrador creado correctamente')
     } catch (error) {
       this.handleError(error);
     }

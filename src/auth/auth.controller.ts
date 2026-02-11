@@ -26,5 +26,4 @@ export class AuthController {
   ) {
     return this.authService.user(user)
   }
-
 }

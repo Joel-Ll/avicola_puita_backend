@@ -1,6 +1,8 @@
+import { Response } from 'express';
 import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Connection, Model } from 'mongoose';
+import { Workbook } from 'exceljs';
 import { UpdateSaleDto } from './dto/update-sale.dto';
 import { Sale, SaleDocument } from './schemas/sale.schema';
 import { saleState } from 'src/common/constants/sale-state';
@@ -13,8 +15,10 @@ import { salePrintSchema } from './interface/sale-guide.interface';
 import { getSaleGuide } from 'src/reports/sale-guide';
 import { PrinterService } from 'src/printer/printer.service';
 import { updateDetailSold } from 'src/utils/sale.utils';
-import { ProductsSoldDto } from './dto/sales-history.dto';
+import { SaleHistoryDto } from './dto/sales-history.dto';
 import { EditSoldProductDto } from './dto/edit-sold-product.dto';
+import { saleXmlSchema } from './interface/sale-xml.interface';
+import { agent } from 'supertest';
 
 @Injectable()
 export class SalesService {
@@ -455,9 +459,91 @@ export class SalesService {
     }
   }
 
+  // Generar XML
+  public async exportToExcel(exportToExcelDto: SaleHistoryDto, res: Response) {
+    const { fromDate, toDate } = exportToExcelDto;
+
+    if (new Date(fromDate) > new Date(toDate))
+      throw new BadRequestException('Fecha no valida');
+
+    const startOfFromDate = new Date(fromDate);
+    startOfFromDate.setHours(0, 0, 0, 0);
+
+    const endOfToDay = new Date(toDate);
+    endOfToDay.setHours(23, 59, 59, 999);
+
+    const productsSold = await this.productSoldModel.find({
+      createdAt: { $gte: startOfFromDate, $lte: endOfToDay }
+    }).select({ method: 1, amount: 1, unitQuantity: 1, quantityPerBox: 1, observation: 1, createdAt: 1 })
+      .populate({
+        path: 'idSale',
+        select: { saleCode: 1, agent: 1 },
+      })
+      .populate({
+        path: 'idEgg',
+        select: { size: 1 }
+      })
+
+    const response = saleXmlSchema.safeParse(productsSold);
+
+    if (response.success) {
+      const workbook = new Workbook();
+      const sheet = workbook.addWorksheet('Pagos');
+
+      // Cabeceras
+      sheet.addRow([
+        'Fecha',
+        'Código',
+        'Agente',
+        'Tamaño',
+        'Cajas',
+        'Maples',
+        'Monto',
+        'Método de pago',
+        'Observaciones'
+      ]);
+
+      response.data.forEach((productSold) => {
+        sheet.addRow([
+          new Date(productSold.createdAt).toLocaleDateString(),
+          productSold.idSale.saleCode,
+          productSold.idSale.agent,
+          productSold.idEgg.size,
+          productSold.quantityPerBox,
+          productSold.unitQuantity,
+          productSold.amount,
+          productSold.method,
+          productSold.observation,
+        ]);
+      });
+
+      // Total automático al final
+      sheet.addRow(['', '', '', '', '', 'Total', { formula: `SUM(G2:G${productsSold.length + 1})` }]);
+
+      // Estilos básicos (opcional)
+      sheet.columns.forEach((col) => (col.width = 20));
+
+      // Enviar al cliente como descarga
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      );
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename=ventas.xlsx',
+      );
+
+      await workbook.xlsx.write(res);
+      res.end();
+    } else {
+      this.logger.error(response.error);
+      res.end();
+    }
+  }
+
   // Ventas internas
-  public async getAllProductsSold(productsSoldDto: ProductsSoldDto) {
-    const { fromDate, toDate } = productsSoldDto;
+  public async getAllProductsSold(saleHistory: SaleHistoryDto) {
+    const { fromDate, toDate } = saleHistory;
     if (new Date(fromDate) > new Date(toDate))
       throw new BadRequestException('Fecha no valida');
 

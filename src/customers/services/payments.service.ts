@@ -85,7 +85,7 @@ export class PaymentsService {
     payment.amount = amount;
     payment.method = method;
 
-    if (order.balance < 0) 
+    if (order.balance < 0)
       throw new BadRequestException("No puede haber sobrepago");
 
     if (order.balance > 0)
@@ -166,6 +166,7 @@ export class PaymentsService {
           select: { name: 1 }
         },
       }).lean();
+
     const response = paymentsSchema.safeParse(payments);
 
     if (response.success) {
@@ -210,7 +211,7 @@ export class PaymentsService {
       await workbook.xlsx.write(res);
       res.end();
     } else {
-      console.log(response.error)
+      this.logger.error(response.error);
       res.end();
     }
   }

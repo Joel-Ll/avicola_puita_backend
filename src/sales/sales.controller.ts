@@ -6,7 +6,7 @@ import { ReqSale } from './interface/sale.interface';
 import { CreateItemDto } from 'src/customers/dto/create-item.dto';
 import { ParseMongoIdPipe } from 'src/common/pipes/parse-mongo-id.pipe';
 import { CreateSoldProductDto } from './dto/create-sold-producto.dto';
-import { ProductsSoldDto } from './dto/sales-history.dto';
+import {  SaleHistoryDto } from './dto/sales-history.dto';
 import { EditSoldProductDto } from './dto/edit-sold-product.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 
@@ -118,7 +118,7 @@ export class SalesController {
 
   @Post('/products-sold/history')
   getPayments(
-    @Body() productsSoldDto: ProductsSoldDto
+    @Body() productsSoldDto: SaleHistoryDto
   ) {
     return this.salesService.getAllProductsSold(productsSoldDto);
   }
@@ -133,5 +133,13 @@ export class SalesController {
     response.setHeader('Content-Type', 'application/pdf');
     pdfDoc.pipe(response);
     pdfDoc.end();
+  }
+
+  @Post('export/xml')
+  async exportToExcel(
+    @Body() saleReporExcelDto: SaleHistoryDto,
+    @Res() res: Response
+  ) {
+    await this.salesService.exportToExcel(saleReporExcelDto, res);
   }
 }
